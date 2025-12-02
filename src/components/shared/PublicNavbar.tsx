@@ -7,11 +7,11 @@ import LogoutButton from "./LogoutButton";
 
 const PublicNavbar = async () => {
   const navItems = [
-    { href: "#", label: "Tour" },
-    { href: "#", label: "Buddy Request" },
-    { href: "#", label: "Best Match" },
-    { href: "#", label: "Subscription" },
-    { href: "#", label: "About" },
+    { href: "/trip", label: "Trip" },
+    { href: "/buddy-request", label: "Buddy Request" },
+    { href: "/best-match", label: "Best Match" },
+    { href: "/subscription", label: "Subscription" },
+    { href: "/about", label: "About" },
   ];
 
   const accessToken = await getCookie("accessToken");
