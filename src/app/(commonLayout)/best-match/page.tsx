@@ -1,9 +1,9 @@
-import React from 'react'
+import RecommendedTravelersPage from "@/components/modules/Best-match/BestMatch";
 
 export default function BestMatch() {
   return (
     <div>
-      <h1> Best Match TRip  </h1>
+      <RecommendedTravelersPage/>
     </div>
   )
 }

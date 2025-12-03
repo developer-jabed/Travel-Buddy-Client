@@ -2,12 +2,12 @@
 "use server"
 
 import { serverFetch } from "@/lib/server-fetch";
-import { UserInfo } from "@/types/user.interface";
+// import { UserInfo } from "@/types/user.interface";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { getCookie } from "./tokenHandlers";
 
-export const getUserInfo = async (): Promise<UserInfo | any> => {
-    let userInfo: UserInfo | any;
+export const getUserInfo = async (): Promise< | any> => {
+    let userInfo:  | any;
     try {
 
         const response = await serverFetch.get("/auth/me", {

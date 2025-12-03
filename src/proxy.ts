@@ -32,6 +32,7 @@ export async function proxy(request: NextRequest) {
     // const accessToken = request.cookies.get("accessToken")?.value || null;
 
     const accessToken = await getCookie("accessToken") || null;
+    
 
     let userRole: UserRole | null = null;
     if (accessToken) {
@@ -95,7 +96,7 @@ export async function proxy(request: NextRequest) {
     }
 
     // Rule 5 : User is trying to access role based protected route
-    if (routerOwner === "ADMIN" || routerOwner === "DOCTOR" || routerOwner === "PATIENT") {
+    if (routerOwner === "ADMIN" || routerOwner === "MODERATOR" || routerOwner === "USER") {
         if (userRole !== routerOwner) {
             return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole as UserRole), request.url))
         }

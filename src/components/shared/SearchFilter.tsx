@@ -8,11 +8,13 @@ import { Input } from "../ui/input";
 interface SearchFilterProps {
   placeholder?: string;
   paramName?: string;
+  type?: "text" | "number" | "date";
 }
 
 const SearchFilter = ({
   placeholder = "Search...",
   paramName = "searchTerm",
+  type = "text",
 }: SearchFilterProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -22,19 +24,16 @@ const SearchFilter = ({
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
-
     const initialValue = searchParams.get(paramName) || "";
 
-    if (debouncedValue === initialValue) {
-      return;
-    }
+    if (debouncedValue === initialValue) return;
 
     if (debouncedValue) {
-      params.set(paramName, debouncedValue); // ?searchTerm=debouncedValue
-      params.set("page", "1"); // reset to first page on search
+      params.set(paramName, debouncedValue);
+      params.set("page", "1"); // reset page
     } else {
-      params.delete(paramName); // remove searchTerm param
-      params.delete("page"); // reset to first page on search clear
+      params.delete(paramName);
+      params.delete("page");
     }
 
     startTransition(() => {
@@ -44,11 +43,12 @@ const SearchFilter = ({
   }, [debouncedValue, paramName, router]);
 
   return (
-    <div className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="relative w-full">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
       <Input
+        type={type}
         placeholder={placeholder}
-        className="pl-10"
+        className="pl-10 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg border-gray-300 w-full transition-all duration-300"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         disabled={isPending}

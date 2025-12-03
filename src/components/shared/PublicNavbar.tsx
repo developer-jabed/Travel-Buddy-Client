@@ -8,8 +8,9 @@ import LogoutButton from "./LogoutButton";
 const PublicNavbar = async () => {
   const navItems = [
     { href: "/trip", label: "Trip" },
-    { href: "/buddy-request", label: "Buddy Request" },
-    { href: "/best-match", label: "Best Match" },
+    { href: "/best-match", label: "Traveler" },
+    { href: "/chat", label: "Chat" },
+    { href: "/request", label: "Buddy Request" },
     { href: "/subscription", label: "Subscription" },
     { href: "/about", label: "About" },
   ];

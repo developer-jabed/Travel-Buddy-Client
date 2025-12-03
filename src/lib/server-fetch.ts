@@ -15,6 +15,8 @@ const serverFetchHelper = async (endpoint: string, options: RequestInit): Promis
     }
 
     const response = await fetch(`${BACKEND_API_URL}${endpoint}`, {
+        ...options,
+        credentials: "include",
         headers: {
             Cookie: accessToken ? `accessToken=${accessToken}` : "",
             ...headers,

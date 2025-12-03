@@ -11,7 +11,6 @@ export const registerPatient = async (_currentState: any, formData: any): Promis
     try {
         const payload = {
             name: formData.get('name'),
-            address: formData.get('address'),
             email: formData.get('email'),
             password: formData.get('password'),
             confirmPassword: formData.get('confirmPassword'),
@@ -26,7 +25,7 @@ export const registerPatient = async (_currentState: any, formData: any): Promis
             password: validatedPayload.password,
             patient: {
                 name: validatedPayload.name,
-                address: validatedPayload.address,
+                // address: validatedPayload.address,
                 email: validatedPayload.email,
             }
         }
@@ -39,7 +38,7 @@ export const registerPatient = async (_currentState: any, formData: any): Promis
             newFormData.append("file", formData.get("file") as Blob);
         }
 
-        const res = await serverFetch.post("/user/create-patient", {
+        const res = await serverFetch.post("/users/create-traveler", {
             body: newFormData,
         })
 
