@@ -46,7 +46,7 @@ export default function RecommendedTravelers() {
     const [currentUser, setCurrentUser] = useState<any>(null);
     const router = useRouter();
 
-    // Fetch logged-in user info
+    // Fetch logged-in user
     useEffect(() => {
         const fetchUser = async () => {
             const user = await getUserInfo();
@@ -70,7 +70,7 @@ export default function RecommendedTravelers() {
                     toast.error(res.message || "Failed to fetch travelers");
                     setError(res.message);
                 }
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 toast.error(err.message || "Something went wrong");
                 setError(err.message);
@@ -105,11 +105,18 @@ export default function RecommendedTravelers() {
 
     if (loading) return <p className="text-gray-500">Loading recommended travelers...</p>;
     if (error) return <p className="text-red-500">{error}</p>;
-    if (!travelers.length) return <p className="text-gray-500">No recommended travelers found.</p>;
+
+    // Filter out currently logged-in user
+    const filteredTravelers = travelers.filter(
+        (t) => t.userId !== currentUser?.id
+    );
+
+    if (!filteredTravelers.length)
+        return <p className="text-gray-500">No recommended travelers found.</p>;
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6  mt-4 mb-4 pl-4 pr-4">
-            {travelers.map((traveler) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4 mb-4 pl-4 pr-4">
+            {filteredTravelers.map((traveler) => (
                 <Card
                     key={traveler.userId}
                     className="flex flex-col hover:shadow-xl transition-shadow duration-300"
@@ -143,7 +150,9 @@ export default function RecommendedTravelers() {
                             {traveler.city}, {traveler.country}
                         </p>
 
-                        <p className="text-gray-600 text-sm">Travel Style: {traveler.travelStyle}</p>
+                        <p className="text-gray-600 text-sm">
+                            Travel Style: {traveler.travelStyle}
+                        </p>
 
                         <Badge variant="outline" className="mt-1">
                             Match Score: {traveler.score}%

@@ -1,9 +1,10 @@
+import ChatApp from "@/components/modules/chat/Chat";
 
 
 export default function ChatPage() {
   return (
     <div>
-      <h1>Chat Page</h1>
+      <ChatApp/>
     </div>
   )
 }

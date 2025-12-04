@@ -3,15 +3,15 @@
 
 import { serverFetch } from "@/lib/server-fetch";
 import { zodValidator } from "@/lib/zodValidator";
-import {  ITripResponse, ITripUpdatePayload } from "@/types/trip.interface";
+// import { ITrip } from "@/types/trip.interface";
 import { createTripSchema, updateTripSchema } from "@/zod/trip.validation";
 
 // -----------------------------
 // -----------------------------
 // CREATE TRIP
 // -----------------------------
-export async function createTrip(formData: FormData): Promise<ITripResponse> {
-  const payload: ITripUpdatePayload = {
+export async function createTrip(formData: FormData): Promise<any> {
+  const payload: any = {
     title: formData.get("title") as string,
     destination: formData.get("destination") as string,
     startDate: formData.get("startDate") as string,
@@ -51,7 +51,7 @@ export async function createTrip(formData: FormData): Promise<ITripResponse> {
 // -----------------------------
 // GET ALL TRIPS (Admin/Moderator)
 // -----------------------------
-export async function getAllTrips(queryString?: string): Promise<ITripResponse> {
+export async function getAllTrips(queryString?: string): Promise<any> {
   try {
     const response = await serverFetch.get(`/trips${queryString ? `?${queryString}` : ""}`);
     return await response.json();
@@ -66,7 +66,7 @@ export async function getAllTrips(queryString?: string): Promise<ITripResponse> 
 // -----------------------------
 // GET OWN TRIPS
 // -----------------------------
-export async function getOwnTrips(queryString?: string): Promise<ITripResponse> {
+export async function getOwnTrips(queryString?: string): Promise<any> {
   try {
     const response = await serverFetch.get(`/trips/own${queryString ? `?${queryString}` : ""}`);
     return await response.json();
@@ -81,7 +81,7 @@ export async function getOwnTrips(queryString?: string): Promise<ITripResponse> 
 // -----------------------------
 // GET TRIP BY ID
 // -----------------------------
-export async function getTripById(id: string): Promise<ITripResponse> {
+export async function getTripById(id: string): Promise<any> {
   try {
     const response = await serverFetch.get(`/trips/${id}`);
     return await response.json();
@@ -96,7 +96,7 @@ export async function getTripById(id: string): Promise<ITripResponse> {
 // -----------------------------
 // UPDATE TRIP
 // -----------------------------
-export async function updateTrip(id: string, payload: ITripUpdatePayload): Promise<ITripResponse> {
+export async function updateTrip(id: string, payload: any): Promise<any> {
   const validated = zodValidator(payload, updateTripSchema);
 
   if (!validated.success) {
@@ -126,7 +126,7 @@ export async function updateTrip(id: string, payload: ITripUpdatePayload): Promi
 // -----------------------------
 // DELETE TRIP
 // -----------------------------
-export async function deleteTrip(id: string): Promise<ITripResponse> {
+export async function deleteTrip(id: string): Promise<any> {
   try {
     const response = await serverFetch.delete(`/trips/${id}`);
     return await response.json();
@@ -141,7 +141,7 @@ export async function deleteTrip(id: string): Promise<ITripResponse> {
 // -----------------------------
 // GET RECOMMENDED BUDDIES
 // -----------------------------
-export async function getRecommendedBuddies(tripId: string): Promise<ITripResponse> {
+export async function getRecommendedBuddies(tripId: string): Promise<any> {
   try {
     const response = await serverFetch.get(`/trips/recommendations?tripId=${tripId}`);
     return await response.json();

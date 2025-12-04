@@ -2,8 +2,6 @@
 "use server";
 
 import { serverFetch } from "@/lib/server-fetch";
-import { getCookie } from "@/services/auth/tokenHandlers";
-
 
 // -----------------------------
 // TYPES
@@ -13,98 +11,84 @@ export interface IBuddyRequestPayload {
   tripId?: string | null;
 }
 
-export type BuddyRequestStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
+export type BuddyRequestStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 
 export interface IBuddyRequestUpdatePayload {
   status: BuddyRequestStatus;
 }
 
+
 // -----------------------------
 // CREATE BUDDY REQUEST
 // -----------------------------
-
-
 export async function createBuddyRequest(payload: IBuddyRequestPayload) {
   try {
-    console.log("Sending payload:", payload);
-
-    const accessToken = await getCookie("accessToken");
-
-    const BASE_URL = process.env.NEXT_PUBLIC_BASE_API_URL;  
-    if (!BASE_URL) {
-      throw new Error("Base API URL is missing in .env");
-    }
-
-    const res = await fetch(`${BASE_URL}/buddy`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(accessToken ? { accesstoken: accessToken } : {}), // send token
-      },
+    const res = await serverFetch.post("/buddy", {
       body: JSON.stringify(payload),
-      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
     });
 
     return await res.json();
   } catch (error: any) {
     return {
       success: false,
-      message: error.message || "Failed to send buddy request",
+      message: error.message ?? "Failed to send buddy request",
     };
   }
 }
 
 
 // -----------------------------
-// GET ALL BUDDY REQUESTS (Admin/Moderator)
+// GET RECEIVED BUDDY REQUESTS
+// (Only requests where logged-in user = receiver)
 // -----------------------------
-export async function getAllBuddyRequests(filters?: any) {
+export async function getReceivedBuddyRequests(queryString: string = "") {
   try {
-    const query = filters ? `?${new URLSearchParams(filters).toString()}` : "";
-    const res = await serverFetch.get(`/buddy/own${query}`);
+    const res = await serverFetch.get(`/buddy${queryString}`);
+
     return await res.json();
   } catch (error: any) {
-    return { success: false, message: error.message || "Failed to fetch buddy requests" };
+    return { success: false, message: error.message };
   }
 }
 
+
 // -----------------------------
-// GET OWN BUDDY REQUESTS (Logged-in user)
+// GET SENT BUDDY REQUESTS
+// (Only requests where logged-in user = sender)
 // -----------------------------
-export async function getOwnBuddyRequests(filters?: any) {
+export async function getSentBuddyRequests(queryString: string = "") {
   try {
-    const query = filters ? `?${new URLSearchParams(filters).toString()}` : "";
-    const res = await serverFetch.get(`/buddy-request/own${query}`);
+    const res = await serverFetch.get(`/buddy/own${queryString}`);
+
     return await res.json();
   } catch (error: any) {
-    return { success: false, message: error.message || "Failed to fetch own buddy requests" };
+    return { success: false, message: error.message };
   }
 }
+
 
 // -----------------------------
 // UPDATE BUDDY REQUEST STATUS
+// (Accept / Reject Request)
 // -----------------------------
-export async function updateBuddyRequest(requestId: string, payload: IBuddyRequestUpdatePayload) {
+export async function updateBuddyRequest(
+  requestId: string,
+  payload: IBuddyRequestUpdatePayload
+  
+) {
   try {
-    const res = await serverFetch.patch(`/buddy-request/${requestId}`, {
+    const res = await serverFetch.patch(`/buddy/${requestId}`, {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
+      
     });
-    return await res.json();
-  } catch (error: any) {
-    return { success: false, message: error.message || "Failed to update buddy request" };
-  }
-}
 
-// -----------------------------
-// DELETE BUDDY REQUEST
-// -----------------------------
-export async function deleteBuddyRequest(requestId: string) {
-  try {
-    const res = await serverFetch.delete(`/buddy-request/${requestId}`);
     return await res.json();
   } catch (error: any) {
-    return { success: false, message: error.message || "Failed to delete buddy request" };
+    return {
+      success: false,
+      message: error.message ?? "Failed to update buddy request",
+    };
   }
 }
