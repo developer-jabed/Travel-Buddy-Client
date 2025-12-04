@@ -1,6 +1,6 @@
 "use client";
 
-import { registerPatient } from "@/services/auth/registerPatient";
+import { registerPatient } from "@/services/auth/registerTraveler";
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 import InputFieldError from "./shared/InputFieldError";
