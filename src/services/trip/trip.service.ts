@@ -14,8 +14,9 @@ export async function createTrip(formData: FormData): Promise<any> {
   const payload: any = {
     title: formData.get("title") as string,
     destination: formData.get("destination") as string,
-    startDate: formData.get("startDate") as string,
-    endDate: formData.get("endDate") as string,
+    // Convert to ISO string with default times
+    startDate: new Date(`${formData.get("startDate")}T08:00:00Z`).toISOString(),
+    endDate: new Date(`${formData.get("endDate")}T17:00:00Z`).toISOString(),
     budget: formData.get("budget") ? Number(formData.get("budget")) : undefined,
     description: formData.get("description") as string,
     interests: formData.getAll("interests") as string[],
@@ -33,7 +34,7 @@ export async function createTrip(formData: FormData): Promise<any> {
   }
 
   try {
-    const response = await serverFetch.post("/trip", {
+    const response = await serverFetch.post("/trips", {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(validated.data),
     });
@@ -47,6 +48,7 @@ export async function createTrip(formData: FormData): Promise<any> {
     };
   }
 }
+
 
 // -----------------------------
 // GET ALL TRIPS (Admin/Moderator)
@@ -97,6 +99,14 @@ export async function getTripById(id: string): Promise<any> {
 // UPDATE TRIP
 // -----------------------------
 export async function updateTrip(id: string, payload: any): Promise<any> {
+  // Convert startDate and endDate to ISO strings if they exist
+  if (payload.startDate) {
+    payload.startDate = new Date(`${payload.startDate}T08:00:00Z`).toISOString();
+  }
+  if (payload.endDate) {
+    payload.endDate = new Date(`${payload.endDate}T17:00:00Z`).toISOString();
+  }
+
   const validated = zodValidator(payload, updateTripSchema);
 
   if (!validated.success) {
