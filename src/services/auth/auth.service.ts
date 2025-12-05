@@ -34,13 +34,14 @@ export async function updateMyProfile(formData: FormData) {
             uploadFormData.append('file', file);
         }
 
-        const response = await serverFetch.patch(`/user/update-my-profile`, {
+        const response = await serverFetch.patch(`/users/update-my-profile`, {
             body: uploadFormData,
         });
 
         const result = await response.json();
 
         revalidateTag("user-info", { expire: 0 });
+        console.log(result)
         return result;
     } catch (error: any) {
         console.log(error);

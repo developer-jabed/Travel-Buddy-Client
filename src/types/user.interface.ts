@@ -11,6 +11,7 @@ import { IModerator } from "./Moderator.interface";
 import { IAdmin } from "./Admin.interface";
 import { ITrip } from "./trip.interface";
 import { ISubscription } from "./Subscription.interface";
+import { ITravelerProfile } from "./TravelerProfile.interface";
 
 
 
@@ -50,7 +51,7 @@ export interface UserInfo {
   Subscription: ISubscription[];
   Notification: INotification[];
 
-  TravelerProfile?: ITrip | null;
+  TravelerProfile?: ITravelerProfile | null;
   Moderator?: IModerator | null;
   Admin?: IAdmin | null;
 }
