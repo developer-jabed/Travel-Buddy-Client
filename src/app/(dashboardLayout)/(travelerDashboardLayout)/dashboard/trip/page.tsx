@@ -11,5 +11,4 @@ const TripPage = () => {
     </div>
   );
 };
-
 export default TripPage;
