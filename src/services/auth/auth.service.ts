@@ -50,7 +50,38 @@ export async function updateMyProfile(formData: FormData) {
             message: `${process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'}`
         };
     }
+};
+
+
+export async function changePassword(payload: { oldPassword: string; newPassword: string }) {
+    try {
+        // Use serverFetch directly
+        const response = await serverFetch.post("/auth/change-password", {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        // Optional: revalidate user info cache
+        revalidateTag("user-info", { expire: 0 });
+
+        return result;
+    } catch (error: any) {
+        console.error("Change Password Error:", error);
+        return {
+            success: false,
+            message: process.env.NODE_ENV === "development" ? error.message : "Something went wrong",
+        };
+    }
 }
+
+
+
+
+
 
 // Reset Password
 export async function resetPassword(_prevState: any, formData: FormData) {

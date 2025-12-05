@@ -1,5 +1,7 @@
-const ChangePasswordPage = () => {
-  return <div>ChangePasswordPage</div>;
+import ChangePasswordPage from "@/components/modules/ChangePassword/ChangePassword";
+
+const ChangePassword = () => {
+  return <ChangePasswordPage />;
 };
 
-export default ChangePasswordPage;
+export default ChangePassword;

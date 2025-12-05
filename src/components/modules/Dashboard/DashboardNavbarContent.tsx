@@ -1,17 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Bell, Menu, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { NavSection } from "@/types/dashboard.interface";
-import { UserInfo } from "@/types/user.interface";
-import { Bell, Menu, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import DashboardMobileSidebar from "./DashboardMobileSidebar";
 import UserDropdown from "./UserDropdown";
+import { UserInfo } from "@/types/user.interface";
 import { INotification } from "@/types/Notification.interface";
 import { getMyNotifications, markNotificationAsRead } from "@/services/Notification/Notification.service";
-import { formatDistanceToNow } from "date-fns";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { NavSection } from "@/types/dashboard.interface";
 
 interface DashboardNavbarContentProps {
   userInfo: UserInfo;
@@ -24,15 +24,13 @@ const DashboardNavbarContent = ({
   navItems,
   dashboardHome,
 }: DashboardNavbarContentProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // Mobile sidebar
   const [isMobile, setIsMobile] = useState(false);
-
-  // Notification state
   const [notifications, setNotifications] = useState<INotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false); // Notification sidebar
 
-  // Check screen size
+  // Detect mobile screen
   useEffect(() => {
     const checkSmallerScreen = () => setIsMobile(window.innerWidth < 768);
     checkSmallerScreen();
@@ -58,7 +56,7 @@ const DashboardNavbarContent = ({
       setNotifications(prev =>
         prev.map(n => (n.id === id ? { ...n, isRead: true } : n))
       );
-      setUnreadCount(prev => Math.max(prev - 1, 0));
+      setUnreadCount(prev => prev - 1);
     }
   };
 
@@ -92,34 +90,31 @@ const DashboardNavbarContent = ({
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-2">
-
           {/* Notification Bell */}
-          <Sheet open={isNotificationOpen} onOpenChange={setIsNotificationOpen}>
+          <Sheet open={isNotifOpen} onOpenChange={setIsNotifOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500" />
+                  <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500" />
                 )}
               </Button>
             </SheetTrigger>
+
             <SheetContent side="right" className="w-80 sm:w-96 p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Notifications</h2>
-                {unreadCount > 0 && (
-                  <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
-                    {unreadCount}
-                  </span>
-                )}
-              </div>
+              {/* Accessibility title */}
+              <SheetTitle>
+                <VisuallyHidden>Notifications</VisuallyHidden>
+              </SheetTitle>
+
               <div className="flex flex-col gap-2 overflow-y-auto max-h-[70vh]">
                 {notifications.length === 0 && (
-                  <p className="text-gray-500 text-sm">No notifications</p>
+                  <p className="text-sm text-gray-500">No notifications</p>
                 )}
                 {notifications.map(n => (
                   <div
                     key={n.id}
-                    className={`p-3 border-b rounded cursor-pointer flex justify-between items-center hover:bg-gray-100 ${
+                    className={`p-3 rounded-lg cursor-pointer flex justify-between items-start gap-2 hover:bg-gray-100 ${
                       n.isRead ? "bg-gray-50" : "bg-white"
                     }`}
                   >
@@ -134,7 +129,7 @@ const DashboardNavbarContent = ({
                         </a>
                       )}
                       <p className="text-gray-400 text-xs mt-1">
-                        {formatDistanceToNow(new Date(n.createdAt))} ago
+                        {new Date(n.createdAt).toLocaleString()}
                       </p>
                     </div>
                     {!n.isRead && (
