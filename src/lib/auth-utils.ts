@@ -6,6 +6,7 @@ export type RouteConfig = {
     exact: string[],
     patterns: RegExp[],
 }
+// console.log()
 
 export const authRoutes = ["/login", "/register", "/forgot-password"];
 
@@ -58,6 +59,7 @@ export const getRouteOwner = (pathname: string): "ADMIN" | "MODERATOR" | "USER" 
 }
 
 export const getDefaultDashboardRoute = (role: UserRole): string => {
+    console.log(role)
     if (role === "ADMIN") {
         return "/admin/dashboard";
     }

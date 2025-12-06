@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,19 +15,12 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogTrigger,
-} from "@/components/ui/dialog";
 import { getUserInfo } from "@/services/auth/getUserInfo";
 import { createBuddyRequest } from "@/services/buddyRequest/BuddyRequest";
 import { toast } from "sonner";
 
 interface IRecommendedTraveler {
+    id: string;
     userId: string;
     name: string;
     email: string;
@@ -36,17 +30,18 @@ interface IRecommendedTraveler {
     travelStyle?: string;
     interests?: string[];
     score: number;
+
+    avgRating?: number | null;
+    totalReviews?: number | null;
 }
 
 export default function RecommendedTravelers() {
     const [travelers, setTravelers] = useState<IRecommendedTraveler[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [currentUser, setCurrentUser] = useState<any>(null);
     const router = useRouter();
 
-    // Fetch logged-in user
     useEffect(() => {
         const fetchUser = async () => {
             const user = await getUserInfo();
@@ -55,7 +50,6 @@ export default function RecommendedTravelers() {
         fetchUser();
     }, []);
 
-    // Fetch recommended travelers
     useEffect(() => {
         const fetchTravelers = async () => {
             setLoading(true);
@@ -63,14 +57,12 @@ export default function RecommendedTravelers() {
 
             try {
                 const res = await getRecommendedTravelers();
-
                 if (res.success && res.data) {
                     setTravelers(res.data);
                 } else {
                     toast.error(res.message || "Failed to fetch travelers");
                     setError(res.message);
                 }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 toast.error(err.message || "Something went wrong");
                 setError(err.message);
@@ -91,13 +83,11 @@ export default function RecommendedTravelers() {
 
         try {
             const res = await createBuddyRequest({ receiverId });
-
             if (res.success) {
                 toast.success("Buddy request sent successfully!");
             } else {
                 toast.error(res.message || "Failed to send buddy request");
             }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             toast.error(error.message || "Something went wrong");
         }
@@ -106,7 +96,6 @@ export default function RecommendedTravelers() {
     if (loading) return <p className="text-gray-500">Loading recommended travelers...</p>;
     if (error) return <p className="text-red-500">{error}</p>;
 
-    // Filter out currently logged-in user
     const filteredTravelers = travelers.filter(
         (t) => t.userId !== currentUser?.id
     );
@@ -114,83 +103,98 @@ export default function RecommendedTravelers() {
     if (!filteredTravelers.length)
         return <p className="text-gray-500">No recommended travelers found.</p>;
 
+    // ⭐ Type-safe star display
+    const renderStars = (rating: number) => {
+        const stars = [];
+        for (let i = 1; i <= 5; i++) {
+            stars.push(
+                <span key={i} className={i <= rating ? "text-yellow-500" : "text-gray-300"}>
+                    ★
+                </span>
+            );
+        }
+        return stars;
+    };
+
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4 mb-4 pl-4 pr-4">
-            {filteredTravelers.map((traveler) => (
-                <Card
-                    key={traveler.userId}
-                    className="flex flex-col hover:shadow-xl transition-shadow duration-300"
-                >
-                    <CardHeader className="flex items-center gap-4 pb-2">
-                        <Image
-                            src={traveler.profilePhoto || "/default-avatar.png"}
-                            alt={traveler.name}
-                            width={60}
-                            height={60}
-                            className="rounded-full border-2 border-indigo-400"
-                        />
-                        <div>
-                            <CardTitle className="text-gray-900">{traveler.name}</CardTitle>
-                            <CardDescription className="text-gray-500 text-sm">
-                                {traveler.email}
-                            </CardDescription>
-                        </div>
-                    </CardHeader>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4 mb-4 px-4">
+            {filteredTravelers.map((traveler) => {
+                const isValidRating =
+                    typeof traveler.avgRating === "number" &&
+                    !isNaN(traveler.avgRating) &&
+                    traveler.avgRating > 0;
 
-                    <CardContent className="flex flex-col gap-1">
-                        <div className="flex flex-wrap gap-2">
-                            {traveler.interests?.map((interest, idx) => (
-                                <Badge key={idx} variant="secondary">
-                                    {interest}
-                                </Badge>
-                            ))}
-                        </div>
+                return (
+                    <Card key={traveler.userId} className="flex flex-col hover:shadow-xl transition-shadow duration-300">
+                        <CardHeader className="flex items-center gap-4 pb-2">
+                            <Image
+                                src={traveler.profilePhoto || "/default-avatar.png"}
+                                alt={traveler.name}
+                                width={60}
+                                height={60}
+                                className="rounded-full border-2 border-indigo-400"
+                            />
 
-                        <p className="text-gray-600 text-sm mt-2">
-                            {traveler.city}, {traveler.country}
-                        </p>
+                            <div>
+                                <CardTitle className="text-gray-900">{traveler.name}</CardTitle>
+                                <CardDescription className="text-gray-500 text-sm">
+                                    {traveler.email}
+                                </CardDescription>
+                            </div>
+                        </CardHeader>
 
-                        <p className="text-gray-600 text-sm">
-                            Travel Style: {traveler.travelStyle}
-                        </p>
+                        <CardContent className="flex flex-col gap-2">
 
-                        <Badge variant="outline" className="mt-1">
-                            Match Score: {traveler.score}%
-                        </Badge>
-                    </CardContent>
+                            {/* ⭐ Average Rating Only (type safe) */}
+                            <div className="flex items-center gap-2">
+                                {isValidRating ? (
+                                    <>
+                                        <div className="flex">
+                                            {renderStars(Math.round(traveler.avgRating!))}
+                                        </div>
+                                        <span className="text-sm text-gray-600">
+                                            ({traveler.totalReviews} reviews)
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="text-gray-500 text-sm">No reviews yet</span>
+                                )}
+                            </div>
 
-                    <CardFooter className="flex justify-between mt-auto">
-                        {/* View Details Modal */}
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button variant="outline">View Details</Button>
-                            </DialogTrigger>
+                            {/* Interests */}
+                            <div className="flex flex-wrap gap-2 mt-1">
+                                {traveler.interests?.map((interest, idx) => (
+                                    <Badge key={idx} variant="secondary">
+                                        {interest}
+                                    </Badge>
+                                ))}
+                            </div>
 
-                            <DialogContent className="max-w-lg">
-                                <DialogHeader>
-                                    <DialogTitle>{traveler.name}</DialogTitle>
-                                    <DialogDescription>
-                                        <p>Email: {traveler.email}</p>
-                                        <p>City: {traveler.city}</p>
-                                        <p>Country: {traveler.country}</p>
-                                        <p>Travel Style: {traveler.travelStyle}</p>
-                                        <p>Interests: {traveler.interests?.join(", ")}</p>
-                                        <p>Match Score: {traveler.score}%</p>
-                                    </DialogDescription>
-                                </DialogHeader>
-                            </DialogContent>
-                        </Dialog>
+                            <p className="text-gray-600 text-sm mt-2">
+                                {traveler.city}, {traveler.country}
+                            </p>
 
-                        {/* Send Buddy Request */}
-                        <Button
-                            variant="default"
-                            onClick={() => handleSendBuddyRequest(traveler.userId)}
-                        >
-                            Send Buddy Request
-                        </Button>
-                    </CardFooter>
-                </Card>
-            ))}
+                            <p className="text-gray-600 text-sm">
+                                Travel Style: {traveler.travelStyle}
+                            </p>
+
+                            <Badge variant="outline" className="mt-1">
+                                Match Score: {traveler.score}%
+                            </Badge>
+                        </CardContent>
+
+                        <CardFooter className="flex justify-between mt-auto">
+                            <Button variant="outline" onClick={() => router.push(`/best-match/${traveler.id}`)}>
+                                View Details
+                            </Button>
+
+                            <Button variant="default" onClick={() => handleSendBuddyRequest(traveler.userId)}>
+                                Send Buddy Request
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                );
+            })}
         </div>
     );
 }

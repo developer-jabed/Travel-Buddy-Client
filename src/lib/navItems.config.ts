@@ -1,91 +1,96 @@
-""
-
 import { NavSection } from "@/types/dashboard.interface";
 import { getDefaultDashboardRoute, UserRole } from "./auth-utils";
 
 export const getCommonNavItems = (role: UserRole): NavSection[] => {
     const defaultDashboard = getDefaultDashboardRoute(role);
-    // console.log(role)
 
     return [
         {
+            title: "Main",
             items: [
-                
                 {
                     title: "Dashboard",
                     href: defaultDashboard,
                     icon: "LayoutDashboard",
                     roles: ["USER", "MODERATOR", "ADMIN"],
                 },
-                // {
-                //     title: "Best-Match",
-                //     href: `/dashboard/best-match`,
-                //     icon: "LayoutDashboard",
-                //     roles: ["USER"],
-                // },
-                {
-                    title: "Trip Managment",
-                    href: `/dashboard/trip`,
-                    icon: "User",
-                    roles: ["USER"],
-                },
-            
                 {
                     title: "My Profile",
                     href: `/my-profile`,
                     icon: "User",
                     roles: ["USER", "MODERATOR", "ADMIN"],
                 },
-                
-                
-
-            ]
+            ],
         },
+
+        // ✅ NEW Trip Navigation Section
+        {
+            title: "Trip Management",
+            items: [
+                {
+                    title: " Trips Managment ",
+                    href: role === "ADMIN" ? "/admin/dashboard/trip-managment" :  "/dashboard/trip-trip" ,
+                    icon: "Map",
+                    roles: ["USER", "ADMIN"],
+                },
+
+
+            ],
+        },
+
         {
             title: "Settings",
             items: [
                 {
                     title: "Change Password",
                     href: "/change-password",
-                    icon: "Settings", // ✅ String
+                    icon: "Settings",
                     roles: ["USER"],
                 },
             ],
         },
-    ]
-}
-
-
-
+    ];
+};
 
 export const adminNavItems: NavSection[] = [
     {
-        title: "User Management",
+        title: "Admin Panel",
         items: [
             {
                 title: "Admins",
                 href: "/admin/dashboard/admins-management",
-                icon: "Shield", // ✅ String
+                icon: "Shield",
                 roles: ["ADMIN"],
             },
-   
-         
+            {
+                title: "Traveler Management",
+                href: "/admin/dashboard/traveler-management",
+                icon: "Users",
+                roles: ["ADMIN", "MODERATOR"],
+            },
+            {
+                title: "Traveler Reported",
+                href: "/admin/dashboard/repoter-traveler-management",
+                icon: "Users",
+                roles: ["ADMIN", "MODERATOR"],
+            },
+            
         ],
     },
-  
-]
+];
+
 export const getNavItemsByRole = (role: UserRole): NavSection[] => {
-  const commonNavItems = getCommonNavItems(role);
+    const commonNavItems = getCommonNavItems(role);
 
-  switch (role) {
-    case "ADMIN":
-      return [...commonNavItems, ...adminNavItems];
+    switch (role) {
+        case "ADMIN":
+            return [...commonNavItems, ...adminNavItems];
 
-    case "USER":
-    case "MODERATOR":
-      return [...commonNavItems];
+        case "USER":
+        case "MODERATOR":
+            return [...commonNavItems];
 
-    default:
-      return [];
-  }
+        default:
+            return [];
+    }
 };

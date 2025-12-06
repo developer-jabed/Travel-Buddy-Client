@@ -34,3 +34,38 @@ export async function getRecommendedTravelers(): Promise<any> {
     };
   }
 }
+
+
+export async function getTravelerById(id: string): Promise<any> {
+  try {
+    const response = await serverFetch.get(`/traveler/${id}`, {
+      cache: "no-store", // always fetch latest
+      next: { tags: ["traveler-details"] },
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      return {
+        success: false,
+        message: result.message || "Failed to fetch traveler profile",
+        data: null,
+      };
+    }
+
+    return {
+      success: true,
+      message: result.message || "Traveler profile fetched successfully",
+      data: result.data,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to fetch traveler profile",
+      data: null,
+    };
+  }
+}
