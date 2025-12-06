@@ -49,7 +49,7 @@ export async function createAdmin(_prevState: any, formData: FormData) {
     try {
 
 
-        const response = await serverFetch.post("/user/create-admin", {
+        const response = await serverFetch.post("/users/create-admin", {
             body: newFormData,
         });
 
@@ -111,22 +111,7 @@ export async function updateAdmin(id: string, _prevState: any, formData: FormDat
         contactNumber: formData.get("contactNumber") as string,
     };
 
-    /*
-    // Server-side validation
-        const validation = updateAdminZodSchema.safeParse(validationPayload);
-        if (!validation.success) {
-            const errors = validation.error.issues.map((err: any) => ({
-                field: err.path[0] as string,
-                message: err.message,
-            }));
-            return {
-                success: false,
-                message: "Validation failed",
-                formData: validationPayload,
-                errors,
-            };
-        }
-    */
+
 
     const validation = zodValidator(validationPayload, updateAdminZodSchema);
     if (!validation.success && validation.errors) {
@@ -187,7 +172,7 @@ export async function softDeleteAdmin(id: string) {
  */
 export async function deleteAdmin(id: string) {
     try {
-        const response = await serverFetch.delete(`/admin/${id}`)
+        const response = await serverFetch.delete(`/admin/soft/${id}`)
         const result = await response.json();
         return result;
     } catch (error: any) {
