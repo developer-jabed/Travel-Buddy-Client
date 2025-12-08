@@ -1,4 +1,5 @@
 "use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,42 +24,50 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
   const [success, setSuccess] = useState<string | null>(null);
 
   // --------------------------------------
-  // 🔥 GET PROFILE PHOTO BASED ON ROLE
+  // GET PROFILE PHOTO
   // --------------------------------------
-  const getProfilePhoto = () => {
-    if (userInfo.role === "ADMIN") return userInfo.Admin?.profilePhoto;
-    if (userInfo.role === "MODERATOR") return userInfo.Moderator?.profilePhoto;
-    if (userInfo.role === "USER") return userInfo.TravelerProfile?.profilePhoto;
-    return null;
+  const profilePhoto =
+    userInfo.role === "ADMIN"
+      ? userInfo.Admin?.profilePhoto
+      : userInfo.role === "MODERATOR"
+      ? userInfo.Moderator?.profilePhoto
+      : userInfo.TravelerProfile?.profilePhoto;
+
+  // --------------------------------------
+  // GET PROFILE DATA
+  // --------------------------------------
+  const profileData =
+    userInfo.role === "ADMIN"
+      ? userInfo.Admin
+      : userInfo.role === "MODERATOR"
+      ? userInfo.Moderator
+      : userInfo.TravelerProfile;
+
+  // --------------------------------------
+  // Convert boolean → string for inputs
+  // --------------------------------------
+  const getActiveStatus = () => {
+    const isActive =
+      userInfo.Admin?.isActive ?? userInfo.Moderator?.isActive ?? null;
+
+    if (isActive === null) return "";
+    return isActive ? "Active" : "Inactive";
   };
 
   // --------------------------------------
-  // 🔥 GET PROFILE DATA BASED ON ROLE
-  // --------------------------------------
-  const getProfileData = () => {
-    if (userInfo.role === "ADMIN") return userInfo.Admin;
-    if (userInfo.role === "MODERATOR") return userInfo.Moderator;
-    if (userInfo.role === "USER") return userInfo.TravelerProfile;
-    return null;
-  };
-
-  const profilePhoto = getProfilePhoto();
-  const profileData = getProfileData();
-
-  // --------------------------------------
-  // 🔥 Update Image Preview
+  // IMAGE PREVIEW
   // --------------------------------------
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setPreviewImage(reader.result as string);
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => setPreviewImage(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   // --------------------------------------
-  // 🔥 Submit Update
+  // FORM SUBMIT
   // --------------------------------------
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -82,10 +91,12 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
+      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">My Profile</h1>
-        <p className="text-muted-foreground mt-1">Manage your personal information</p>
+        <p className="text-muted-foreground mt-1">
+          Manage your personal information
+        </p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -103,7 +114,7 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
                 <Avatar className="h-32 w-32">
                   {previewImage || profilePhoto ? (
                     <AvatarImage
-                      src={previewImage || (profilePhoto as string)}
+                      src={previewImage ?? profilePhoto!}
                       alt={userInfo.name}
                     />
                   ) : (
@@ -113,6 +124,7 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
                   )}
                 </Avatar>
 
+                {/* Upload Button */}
                 <label
                   htmlFor="file"
                   className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90"
@@ -121,9 +133,9 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
                 </label>
 
                 <Input
-                  type="file"
                   id="file"
                   name="file"
+                  type="file"
                   accept="image/*"
                   className="hidden"
                   onChange={handleImageChange}
@@ -131,6 +143,7 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
                 />
               </div>
 
+              {/* User Info */}
               <div className="text-center">
                 <p className="font-semibold text-lg">
                   {profileData?.name || userInfo.name}
@@ -144,7 +157,7 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
           </Card>
 
           {/* -------------------------------------- */}
-          {/* PROFILE INFO FORM */}
+          {/* PROFILE INFO */}
           {/* -------------------------------------- */}
           <Card className="lg:col-span-2">
             <CardHeader>
@@ -165,7 +178,7 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
               )}
 
               <div className="grid gap-4 md:grid-cols-2">
-                {/* NAME */}
+                {/* Name */}
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <Input
@@ -177,28 +190,22 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
                   />
                 </div>
 
-                {/* EMAIL (READONLY) */}
+                {/* Email */}
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input id="email" type="email" value={userInfo.email} disabled />
                 </div>
 
-                {/* ADMIN & MODERATOR extra fields */}
+                {/* Active Status (Admin / Moderator Only) */}
                 {userInfo.role !== "USER" && (
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="isActive">Status</Label>
-                    <Input
-                      value={
-                        userInfo.Admin?.isActive ??
-                        userInfo.Moderator?.isActive ??
-                        ""
-                      }
-                      disabled
-                    />
+                    <Label>Status</Label>
+                    <Input value={getActiveStatus()} disabled />
                   </div>
                 )}
               </div>
 
+              {/* Save Button */}
               <div className="flex justify-end">
                 <Button type="submit" disabled={isPending}>
                   {isPending ? (

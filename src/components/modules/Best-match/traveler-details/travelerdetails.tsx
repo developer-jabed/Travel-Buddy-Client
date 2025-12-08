@@ -5,10 +5,13 @@ import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-
 import { createReview } from "@/services/review/ReviewService";
 import { getUserInfo } from "@/services/auth/getUserInfo";
 import { createReport } from "@/services/report/ReportService";
+import { CheckCircle, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { createBuddyRequest } from "@/services/buddyRequest/BuddyRequest";
+import { Router } from "next/router";
 
 /* ------------------ Date Formatter (Hydration Safe) ------------------ */
 const DateText = ({ date }: { date: string }) => {
@@ -16,10 +19,12 @@ const DateText = ({ date }: { date: string }) => {
   return <span suppressHydrationWarning>{new Date(date).toLocaleString()}</span>;
 };
 
+const router = Router;
+
 export default function TravelerDetailsClient({ traveler }: any) {
   const reviews = traveler?.user?.reviewsReceived || [];
   const reports = traveler?.user?.reportsReceived || [];
-
+  console.log(traveler)
   /* ------------------ Average Rating ------------------ */
   const averageRating = reviews.length
     ? (
@@ -113,6 +118,21 @@ export default function TravelerDetailsClient({ traveler }: any) {
     }
   };
 
+
+  const handleSendBuddyRequest = async (receiverId: string) => {
+
+
+    try {
+      const res = await createBuddyRequest({ receiverId });
+      if (res.success) {
+        toast.success("Buddy request sent successfully!");
+      } else {
+        toast.error(res.message || "Failed to send buddy request");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Something went wrong");
+    }
+  };
   return (
     <motion.div
       className="max-w-3xl mx-auto p-6 rounded-xl shadow-lg bg-white"
@@ -136,6 +156,26 @@ export default function TravelerDetailsClient({ traveler }: any) {
           <h1 className="text-2xl font-bold text-gray-800">{traveler.name}</h1>
           <p className="text-gray-500">{traveler.email}</p>
           <p className="mt-1 font-medium text-blue-600">{traveler.travelStyle} Traveler</p>
+          {traveler.user?.isVerified ? (
+            <span className="bg-green-600 mt-4 text-white flex items-center gap-1 font-semibold text-xs px-3 py-1 rounded-full shadow-md">
+              <CheckCircle size={14} /> Verified
+            </span>
+          ) : (
+            <span className="bg-red-600 text-white flex mt-4 items-center gap-1 font-semibold text-xs px-3 py-1 rounded-full shadow-md">
+              <XCircle size={14} /> Not Verified
+            </span>
+          )}
+
+          <motion.div whileTap={{ scale: 0.9 }} className="mt-4">
+            <Button
+              variant="default"
+              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white"
+              onClick={() => handleSendBuddyRequest(traveler.user?.id)}
+            >
+              Send Request
+            </Button>
+          </motion.div>
+
         </div>
       </div>
 
@@ -156,6 +196,8 @@ export default function TravelerDetailsClient({ traveler }: any) {
             <span className="text-xs text-gray-600">
               {reviews.length} reviews
             </span>
+
+
           </motion.div>
         </div>
       </Section>

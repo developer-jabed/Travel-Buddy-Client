@@ -1,78 +1,54 @@
-"use client"
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-gsap.registerPlugin(ScrollTrigger);
+import SubscriptionPlansPage from "../Plans/SubscriptionPlans";
+import TravelerRecomended from "./Recomended";
 
 export default function Home() {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    // Hero Animation
-    if (heroRef.current) {
-      gsap.from(heroRef.current.children, {
-        opacity: 1,
-        y: 50,
-        stagger: 0.2,
-        duration: 1,
-        ease: "power3.out",
-      });
-    }
-
-    // Section Animation
-    sectionRefs.current.forEach((section) => {
-      if (section) {
-        gsap.from(section.children, {
-          scrollTrigger: {
-            trigger: section,
-            start: "top 80%",
-          },
-          opacity: 1,
-          y: 50,
-          stagger: 0.2,
-          duration: 1,
-          ease: "power3.out",
-        });
-      }
-    });
-  }, []);
+  const router = useRouter();
 
   return (
     <div className="font-sans text-gray-900">
-      {/* Section 1: Hero */}
-      <section
-        ref={heroRef}
-        className="bg-gradient-to-r from-blue-50 to-blue-100 py-32 px-6 text-center"
-      >
-        <h1 className="text-5xl font-bold text-blue-900 mb-4">
+
+      {/* ===================== HERO ===================== */}
+      <section className="bg-white py-40 px-6 text-center border-b animate-fadeSlide">
+        <h1 className="text-6xl font-extrabold tracking-tight mb-4 text-gray-900">
           Explore the World with Travel Buddy
         </h1>
-        <p className="text-xl text-gray-700 mb-8">
-          Find the best trips, destinations, and experiences effortlessly.
+
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-10">
+          Find travel partners, discover destinations, and enjoy seamless adventures.
         </p>
+
+        {/* Search Box */}
         <div className="flex justify-center gap-3 max-w-xl mx-auto">
-          <Input placeholder="Search destinations..." className="flex-1" />
-          <Button className="flex items-center">
+          <Input
+            placeholder="Search destinations..."
+            className="flex-1 bg-gray-100 border-gray-300"
+          />
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
             <Search className="mr-2 w-5 h-5" />
             Search
           </Button>
         </div>
       </section>
 
-      {/* Section 2: Popular Destinations */}
-      <section
-        ref={(el) => (sectionRefs.current[0] = el)}
-        className="py-24 px-6 bg-white"
-      >
-        <h2 className="text-4xl font-bold text-center mb-12 text-gray-900">
+      {/* ===================== RECOMMENDED TRAVELERS ===================== */}
+      <div className="animate-fadeDrop">
+        <TravelerRecomended />
+      </div>
+
+      {/* ===================== POPULAR DESTINATIONS ===================== */}
+      <section className="py-28 px-6 bg-white animate-fadeDrop">
+        <h2 className="text-4xl font-bold text-center mb-16 text-gray-900">
           Popular Destinations
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {[
             { name: "Paris", img: "/images/paris.jpg" },
             { name: "Tokyo", img: "/images/tokyo.jpg" },
@@ -80,139 +56,110 @@ export default function Home() {
           ].map((dest) => (
             <div
               key={dest.name}
-              className="relative rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-transform duration-500"
+              className="rounded-xl overflow-hidden border shadow-sm hover:shadow-md transition-all duration-300 bg-white"
             >
               <img
                 src={dest.img}
                 alt={dest.name}
-                className="w-full h-64 object-cover"
+                className="w-full h-72 object-cover"
               />
-              <div className="absolute bottom-0 bg-gradient-to-t from-black/70 to-transparent text-white p-4 w-full">
+              <p className="text-xl font-semibold p-5 text-center text-gray-800">
                 {dest.name}
-              </div>
+              </p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Section 3: Why Choose Us */}
-      <section
-        ref={(el) => (sectionRefs.current[1] = el)}
-        className="py-24 px-6 bg-blue-50"
-      >
-        <h2 className="text-4xl font-bold text-center mb-12 text-blue-900">
+      {/* ===================== WHY CHOOSE US ===================== */}
+      <section className="py-28 px-6 bg-gray-100 animate-fadeDrop border-t border-b">
+        <h2 className="text-4xl font-bold text-center mb-16 text-gray-900">
           Why Choose Travel Buddy
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
           {[
             {
-              icon: "✈️",
-              title: "Safe Travel",
-              desc: "Verified guides and partners for worry-free trips.",
+              icon: "🛡️",
+              title: "Trusted & Safe",
+              desc: "Verified profiles and safe travel partners.",
             },
             {
-              icon: "💰",
-              title: "Affordable Plans",
-              desc: "Choose deals that fit every budget.",
+              icon: "💸",
+              title: "Affordable Options",
+              desc: "Choose subscription plans that fit your budget.",
             },
             {
-              icon: "⭐",
-              title: "Memorable Experience",
-              desc: "Curated trips for lifelong memories.",
+              icon: "📍",
+              title: "Smart Matchmaking",
+              desc: "Find the perfect travel buddy based on your style.",
             },
           ].map((item) => (
             <div
               key={item.title}
-              className="p-8 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-500"
+              className="p-10 bg-white rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 text-center"
             >
-              <span className="text-yellow-400 text-5xl mb-4 block">
-                {item.icon}
-              </span>
-              <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+              <span className="text-6xl">{item.icon}</span>
+              <h3 className="text-2xl font-bold mt-5 mb-3">{item.title}</h3>
               <p className="text-gray-600">{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Section 4: Traveler Testimonials */}
-      <section
-        ref={(el) => (sectionRefs.current[2] = el)}
-        className="py-24 px-6 bg-white"
-      >
-        <h2 className="text-4xl font-bold text-center mb-12 text-gray-900">
+      {/* ===================== TESTIMONIALS ===================== */}
+      <section className="py-28 px-6 bg-white animate-fadeDrop">
+        <h2 className="text-4xl font-bold text-center mb-16 text-gray-900">
           Traveler Testimonials
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
           {[
             {
               name: "Alice",
-              review:
-                "Travel Buddy made my trip to Paris unforgettable! Highly recommend.",
+              review: "Travel Buddy made my Paris trip unforgettable!",
             },
             {
               name: "Bob",
-              review:
-                "Easy booking, great support, and amazing experiences.",
+              review: "Very easy to use & smooth experience.",
             },
             {
               name: "Clara",
-              review:
-                "Best travel companion app ever! Loved the itineraries.",
+              review: "Matched with a perfect buddy for Japan!",
             },
           ].map((t) => (
             <div
               key={t.name}
-              className="p-8 bg-blue-50 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-500"
+              className="p-10 bg-gray-50 rounded-xl border shadow-sm hover:shadow-md transition-all duration-300"
             >
-              <p className="text-gray-700 italic">"{t.review}"</p>
-              <p className="mt-4 font-semibold text-gray-900">- {t.name}</p>
+              <p className="text-gray-700 italic">  {t.review}</p>
+              <p className="mt-6 font-semibold text-gray-900 text-right">
+                — {t.name}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Section 5: Subscription Plans */}
-      <section
-        ref={(el) => (sectionRefs.current[3] = el)}
-        className="py-24 px-6 bg-blue-100"
-      >
-        <h2 className="text-4xl font-bold text-center mb-12 text-blue-900">
-          Subscription Plans
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { plan: "Weekly", price: "$9.99" },
-            { plan: "Monthly", price: "$29.99" },
-            { plan: "Yearly", price: "$299.99" },
-          ].map((p) => (
-            <div
-              key={p.plan}
-              className="p-8 bg-white rounded-lg shadow-lg hover:scale-105 transition-transform duration-500 text-center"
-            >
-              <h3 className="text-2xl font-bold mb-4">{p.plan}</h3>
-              <p className="text-xl text-gray-700 mb-4">{p.price}</p>
-              <Button className="bg-blue-600 text-white hover:bg-blue-700">
-                Choose Plan
-              </Button>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* ===================== SUBSCRIPTION PLANS ===================== */}
+      <SubscriptionPlansPage />
 
-      {/* Section 6: Call-to-Action */}
-      <section
-        ref={(el) => (sectionRefs.current[4] = el)}
-        className="py-24 px-6 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-center"
-      >
-        <h2 className="text-4xl font-bold mb-4">Start Your Adventure Today</h2>
-        <p className="text-lg mb-8">
-          Join Travel Buddy and explore the world like never before.
+      {/* ===================== CALL TO ACTION ===================== */}
+      <section className="py-32 px-6 bg-slate-400 text-white text-center animate-fadeSlideUp">
+        <h2 className="text-5xl font-extrabold mb-5">Start Your Journey Today</h2>
+
+        <p className="text-lg mb-10 opacity-90">
+          Join Travel Buddy for smart, safe & fun travel experiences.
         </p>
-        <Button className="bg-white text-yellow-500 hover:bg-gray-100">
+
+        <Button
+          onClick={() => router.push("/trip")}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-6 text-lg rounded-xl shadow-md transition-all"
+        >
           Get Started
         </Button>
       </section>
+
     </div>
   );
 }
