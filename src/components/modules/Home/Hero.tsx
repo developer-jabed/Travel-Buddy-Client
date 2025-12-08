@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,19 +51,23 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {[
-            { name: "Paris", img: "/images/paris.jpg" },
-            { name: "Tokyo", img: "/images/tokyo.jpg" },
-            { name: "Sydney", img: "/images/sydney.jpg" },
+            { name: "Paris", img: "/images/first.jpg "},
+            { name: "Tokyo", img: "/images/second.jpg" },
+            { name: "Sydney", img: "/images/third.jpg" },
           ].map((dest) => (
             <div
               key={dest.name}
               className="rounded-xl overflow-hidden border shadow-sm hover:shadow-md transition-all duration-300 bg-white"
             >
-              <img
-                src={dest.img}
-                alt={dest.name}
-                className="w-full h-72 object-cover"
-              />
+              <div className="relative w-full h-72">
+                <Image
+                  src={dest.img}
+                  alt={dest.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+
               <p className="text-xl font-semibold p-5 text-center text-gray-800">
                 {dest.name}
               </p>
@@ -132,7 +137,7 @@ export default function Home() {
               key={t.name}
               className="p-10 bg-gray-50 rounded-xl border shadow-sm hover:shadow-md transition-all duration-300"
             >
-              <p className="text-gray-700 italic">  {t.review}</p>
+              <p className="text-gray-700 italic">{t.review}</p>
               <p className="mt-6 font-semibold text-gray-900 text-right">
                 — {t.name}
               </p>

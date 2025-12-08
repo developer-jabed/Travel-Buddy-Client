@@ -1,5 +1,7 @@
 import BuddyRequestsPage from '@/components/modules/BuddyRequest/BuddyRequest'
 import React from 'react'
+export const dynamic = "force-dynamic";
+
 
 export default function page() {
   return (

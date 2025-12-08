@@ -7,6 +7,8 @@ import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { queryStringFormatter } from "@/lib/formatters";
 import { getAdmins } from "@/services/Admin/AdminManagement/AdminManagment";
 import { Suspense } from "react";
+export const dynamic = "force-dynamic";
+
 
 const AdminAdminsManagementPage = async ({
     searchParams,

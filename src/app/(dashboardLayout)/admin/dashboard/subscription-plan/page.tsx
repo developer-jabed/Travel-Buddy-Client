@@ -2,6 +2,9 @@ import CreateSubscriptionPlanUI from '@/components/modules/Admin/SubscriptionPla
 import SubscriptionPlansPage from '@/components/modules/Admin/SubscriptionPlan/PlanCart'
 import React from 'react'
 
+export const dynamic = "force-dynamic";
+
+
 export default function SubscriptionPlan() {
   return (
     <div>

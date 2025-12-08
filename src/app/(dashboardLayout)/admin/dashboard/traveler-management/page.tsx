@@ -8,6 +8,9 @@ import { queryStringFormatter } from "@/lib/formatters";
 import { getTravelers } from "@/services/Admin/travlerManagment/traveler-management";
 import { Suspense } from "react";
 
+export const dynamic = "force-dynamic";
+
+
 const AdminTravelersManagementPage = async ({
   searchParams,
 }: {

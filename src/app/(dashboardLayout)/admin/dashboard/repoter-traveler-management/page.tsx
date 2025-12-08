@@ -4,6 +4,8 @@ import ReportsTable from "@/components/modules/Admin/reportedTravelerManagment/R
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { getReports } from "@/services/Admin/reportedTraveler/reportedTraveler";
 import { Suspense } from "react";
+export const dynamic = "force-dynamic";
+
 
 const AdminReportsPage = async () => {
   const reportsResult = await getReports();

@@ -8,6 +8,9 @@ import { getAllTrips } from "@/services/trip/trip.service";
 import { Suspense } from "react";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
 
+export const dynamic = "force-dynamic";
+
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function TripPage({ searchParams }: any) {
 

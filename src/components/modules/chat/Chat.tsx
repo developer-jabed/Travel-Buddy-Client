@@ -50,7 +50,7 @@ export default function ChatApp() {
   }, []);
 
   const loggedInUserId = user?.id || "";
-  const BACKEND_SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
+  const BACKEND_SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "https://travel-buddy-server-1.onrender.com";
 
   // Initialize socket
   useEffect(() => {

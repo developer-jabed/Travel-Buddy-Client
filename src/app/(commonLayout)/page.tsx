@@ -3,6 +3,8 @@ import Hero from "@/components/modules/Home/Hero";
 import HowItWorks from "@/components/modules/Home/HowItWork";
 
 import Head from "next/head";
+export const dynamic = "force-dynamic";
+
 
 export default function Home() {
   return (

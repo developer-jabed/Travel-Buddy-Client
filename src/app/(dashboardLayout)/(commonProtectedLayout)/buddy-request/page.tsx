@@ -1,10 +1,11 @@
-// import BuddyRequestsPage from '@/components/modules/BuddyRequest/BuddyRequest'
-// import React from 'react'
+import React from 'react'
+export const dynamic = "force-dynamic";
 
-// export default function BuddyRequest() {
-//   return (
-//     <div>
-//       <BuddyRequestsPage/>
-//     </div>
-//   )
-// }
+
+export default function BuddyRequest() {
+  return (
+    <div>
+      <h1>Buddy </h1>
+    </div>
+  )
+}

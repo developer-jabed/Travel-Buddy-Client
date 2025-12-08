@@ -10,7 +10,6 @@ import { INotification } from "./Notification.interface";
 import { IModerator } from "./Moderator.interface";
 import { IAdmin } from "./Admin.interface";
 import { ITrip } from "./trip.interface";
-import { ISubscription } from "./Subscription.interface";
 import { ITravelerProfile } from "./TravelerProfile.interface";
 
 
@@ -48,7 +47,7 @@ export interface UserInfo {
 
   ChatParticipant: IChatParticipant[];
   MeetupParticipant: IMeetupParticipant[];
-  Subscription: ISubscription[];
+  // Subscription: ISubscription[];
   Notification: INotification[];
 
   TravelerProfile?: ITravelerProfile | null;

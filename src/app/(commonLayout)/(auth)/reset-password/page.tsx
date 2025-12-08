@@ -1,4 +1,5 @@
 import ResetPasswordForm from "@/components/ResetPasswordForm";
+export const dynamic = "force-dynamic";
 
 const ResetPasswordPage = async ({
   searchParams,

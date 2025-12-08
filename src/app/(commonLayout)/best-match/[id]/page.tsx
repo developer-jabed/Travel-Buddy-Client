@@ -1,5 +1,6 @@
 import TravelerDetailsClient from "@/components/modules/Best-match/traveler-details/travelerdetails";
 import { getTravelerById } from "@/services/Traveler/RecomendedTraveler";
+export const dynamic = "force-dynamic";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function TravelerDetailsPage({ params }: any) {
