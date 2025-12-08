@@ -31,7 +31,10 @@ interface Chat {
 
 export default function ChatApp() {
   const [chats, setChats] = useState<Chat[]>([]);
+  console.log(chats)
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,6 +42,9 @@ export default function ChatApp() {
   const [typingUsers, setTypingUsers] = useState<Record<string, string>>({}); // chatId -> username
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
+
+
+  console.log(chats)
 
   // Fetch logged-in user info
   useEffect(() => {
@@ -60,7 +66,7 @@ export default function ChatApp() {
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("Connected to socket", socket.id);
+      // console.log("Connected to socket", socket.id);
       socket.emit("joinUser", loggedInUserId);
     });
 
@@ -99,6 +105,7 @@ export default function ChatApp() {
     const fetchChats = async () => {
       if (!loggedInUserId) return;
       const data = await ChatAPI.getUserChats();
+      console.log(data)
       setChats(data);
     };
     fetchChats();

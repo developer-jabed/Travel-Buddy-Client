@@ -24,7 +24,7 @@ const router = Router;
 export default function TravelerDetailsClient({ traveler }: any) {
   const reviews = traveler?.user?.reviewsReceived || [];
   const reports = traveler?.user?.reportsReceived || [];
-  console.log(traveler)
+  // console.log(traveler)
   /* ------------------ Average Rating ------------------ */
   const averageRating = reviews.length
     ? (

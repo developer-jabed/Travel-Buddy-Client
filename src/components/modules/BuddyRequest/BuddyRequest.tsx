@@ -35,7 +35,7 @@ export default function BuddyRequestsPage() {
 
     try {
       const res = await getReceivedBuddyRequests();
-      console.log("Received →", res);
+      // console.log("Received →", res);
 
       if (res.success && res.data?.data) {
         setRequests(res.data.data);

@@ -12,7 +12,7 @@ export default function TravelerRecomended() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
-    console.log(travelers)
+    // console.log(travelers)
 
     useEffect(() => {
         async function load() {

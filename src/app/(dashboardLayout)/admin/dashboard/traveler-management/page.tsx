@@ -19,7 +19,7 @@ const AdminTravelersManagementPage = async ({
   const searchParamsObj = await searchParams;
   const queryString = queryStringFormatter(searchParamsObj);
   const travelersResult = await getTravelers(queryString);
-  console.log(travelersResult)
+  // console.log(travelersResult)
 
   const totalPages = Math.ceil(
     (travelersResult?.meta?.total || 1) / (travelersResult?.meta?.limit || 1)

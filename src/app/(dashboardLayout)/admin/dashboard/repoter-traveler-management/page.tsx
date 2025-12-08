@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 const AdminReportsPage = async () => {
   const reportsResult = await getReports();
-  console.log(reportsResult)
+  // console.log(reportsResult)
   const reports = reportsResult?.data || [];
 
   return (
