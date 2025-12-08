@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-
+import { getDashboardMeta } from "@/services/meta/meta.service";
 import {
     MapPin,
     Users,
@@ -15,35 +12,11 @@ import {
     CreditCard,
     Bell,
 } from "lucide-react";
-import { getDashboardMeta } from "@/services/meta/meta.service";
 
-
-export function useDashboardMetaData() {
-    const [meta, setMeta] = useState<any>(null);
-    const [error, setError] = useState<any>(null);
-
-    useEffect(() => {
-        const load = async () => {
-            const res = await getDashboardMeta();
-            if (!res.success) setError(res.message);
-            else setMeta(res.data);
-        };
-        load();
-    }, []);
-
-    return { meta, error };
-}
-
-// --------------------
-// Fancy Card Component
-// --------------------
 function TravelCard({ icon: Icon, title, value, gradient }: any) {
     return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.35 }}
-            className="p-6 rounded-2xl bg-white/10 backdrop-blur-xl shadow-xl border border-white/20 flex items-center gap-4 hover:shadow-2xl hover:scale-[1.03] transition cursor-pointer"
+        <div
+            className="p-6 rounded-2xl bg-white/10 backdrop-blur-xl shadow-xl border border-white/20 flex items-center gap-4"
         >
             <div className={`p-4 rounded-full bg-gradient-to-br ${gradient}`}>
                 <Icon className="w-8 h-8 text-white" />
@@ -52,33 +25,27 @@ function TravelCard({ icon: Icon, title, value, gradient }: any) {
                 <h3 className="text-gray-200 text-sm">{title}</h3>
                 <p className="text-3xl font-bold text-white">{value}</p>
             </div>
-        </motion.div>
+        </div>
     );
 }
 
-// --------------------
-// Main Dashboard
-// --------------------
-export default function TravelDashboard() {
-    const { meta, error } = useDashboardMetaData();
+export default async function TravelDashboard() {
+    const res = await getDashboardMeta();
 
-    if (error) return <p className="text-red-400">{error}</p>;
-    if (!meta) return <p className="text-gray-400 animate-pulse">Loading...</p>;
+    if (!res.success) {
+        return <p className="text-red-400">{res.message}</p>;
+    }
+
+    const meta = res.data;
 
     return (
         <div className="p-6 bg-gradient-to-br from-[#0a1a2f] to-[#112d4e] min-h-screen">
-            <motion.h2
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-3xl font-bold text-white mb-6"
-            >
+            <h2 className="text-3xl font-bold text-white mb-6">
                 ✈ Travel Dashboard Overview
-            </motion.h2>
+            </h2>
 
-            {/* GRID */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                {/* Common for All Users */}
                 <TravelCard
                     icon={MapPin}
                     title="Total Trips"
@@ -121,7 +88,6 @@ export default function TravelDashboard() {
                     gradient="from-pink-500 to-pink-700"
                 />
 
-                {/* Traveler-specific */}
                 {meta?.upcomingTrips !== undefined && (
                     <TravelCard
                         icon={Ticket}
@@ -140,7 +106,6 @@ export default function TravelDashboard() {
                     />
                 )}
 
-                {/* Admin-specific */}
                 {meta?.totalUsers !== undefined && (
                     <TravelCard
                         icon={Users}
@@ -168,34 +133,6 @@ export default function TravelDashboard() {
                     />
                 )}
             </div>
-
-            {/* STATUS DISTRIBUTION */}
-            {meta?.tripStatusBreakdown && (
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-10 bg-white/10 backdrop-blur-lg p-6 rounded-2xl shadow-xl border border-white/20"
-                >
-                    <h3 className="text-white text-lg font-semibold mb-4">
-                        Trip Status Overview
-                    </h3>
-
-                    {meta.tripStatusBreakdown.map((s: any) => (
-                        <div key={s.status} className="mb-4">
-                            <div className="flex justify-between text-gray-200 mb-1">
-                                <span>{s.status}</span>
-                                <span>{s.count}</span>
-                            </div>
-                            <div className="w-full bg-gray-700 h-3 rounded-full">
-                                <div
-                                    className="h-3 bg-blue-500 rounded-full"
-                                    style={{ width: `${s.count * 10}px` }}
-                                ></div>
-                            </div>
-                        </div>
-                    ))}
-                </motion.div>
-            )}
         </div>
     );
 }
