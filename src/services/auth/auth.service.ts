@@ -13,45 +13,86 @@ import { deleteCookie, getCookie, setCookie } from "./tokenHandlers";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function updateMyProfile(formData: FormData) {
-    try {
-        // Create a new FormData with the data property
-        const uploadFormData = new FormData();
+  try {
+    console.log("===== 🔍 DEBUG: RAW FORM DATA RECEIVED FROM CLIENT =====");
 
-        // Get all form fields except the file
-        const data: any = {};
-        formData.forEach((value, key) => {
-            if (key !== 'file' && value) {
-                data[key] = value;
-            }
-        });
-
-        // Add the data as JSON string
-        uploadFormData.append('data', JSON.stringify(data));
-
-        // Add the file if it exists
-        const file = formData.get('file');
-        if (file && file instanceof File && file.size > 0) {
-            uploadFormData.append('file', file);
-        }
-
-        const response = await serverFetch.patch(`/users/update-my-profile`, {
-            body: uploadFormData,
-        });
-
-        const result = await response.json();
-
-        revalidateTag("user-info", { expire: 0 });
-        console.log(result)
-        return result;
-    } catch (error: any) {
-        console.log(error);
-        return {
-            success: false,
-            message: `${process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'}`
-        };
+    // Log each field coming from <form>
+    for (const [key, value] of formData.entries()) {
+      console.log("FORM FIELD:", key, value);
     }
-};
 
+    // ---------------------------------------
+    // CREATE NEW FormData FOR API CALL
+    // ---------------------------------------
+    const uploadFormData = new FormData();
+
+    const data: Record<string, any> = {};
+
+    // Extract non-file fields
+    formData.forEach((value, key) => {
+      if (key !== "file") {
+        data[key] = value;
+      }
+    });
+
+    console.log("===== 📦 DEBUG: EXTRACTED DATA OBJECT =====");
+    console.log(data);
+
+    // Append serialized JSON
+    uploadFormData.append("data", JSON.stringify(data));
+
+    // Extract file
+    const file = formData.get("file");
+
+    console.log("===== 📸 DEBUG: RECEIVED FILE =====");
+    console.log(file);
+
+    if (file && file instanceof File && file.size > 0) {
+      console.log("📌 FILE IS VALID — ADDING TO uploadFormData");
+
+      uploadFormData.append("file", file);
+    } else {
+      console.log("⚠️ NO VALID FILE SELECTED — SKIPPING FILE UPLOAD");
+    }
+
+    // Log final uploadFormData
+    console.log("===== 📨 DEBUG: FINAL uploadFormData SENT TO SERVER =====");
+    uploadFormData.forEach((value, key) => {
+      console.log("UPLOAD FIELD:", key, value);
+    });
+
+    // ---------------------------------------
+    // SEND REQUEST
+    // ---------------------------------------
+    const response = await serverFetch.patch(`/users/update-my-profile`, {
+      body: uploadFormData,
+    });
+
+    console.log("===== 🌐 DEBUG: SERVER RESPONSE OBJECT =====");
+    console.log(response);
+
+    const result = await response.json();
+
+    console.log("===== ✅ DEBUG: JSON RESULT FROM SERVER =====");
+    console.log(result);
+
+    // Refresh user info cache
+    revalidateTag("user-info", { expire: 0 });
+
+    return result;
+  } catch (error: any) {
+    console.error("===== ❌ DEBUG: updateMyProfile ERROR =====");
+    console.error(error);
+
+    return {
+      success: false,
+      message:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Something went wrong",
+    };
+  }
+}
 
 export async function changePassword(payload: { oldPassword: string; newPassword: string }) {
     try {

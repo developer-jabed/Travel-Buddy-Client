@@ -3,7 +3,13 @@
 
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import { ChatAPI } from "@/services/chat/chat.service";
+
+import {
+  getUserChats,
+  getMessages,
+  sendMessage as sendChatMessage,
+} from "@/services/chat/chat.service";
+
 import { getUserInfo } from "@/services/auth/getUserInfo";
 
 interface Message {
@@ -49,66 +55,67 @@ export default function ChatApp() {
 
   const loggedInUserId = user?.id || "";
 
-  // Fetch chats periodically (polling)
+  // Fetch chats periodically
   useEffect(() => {
     if (!loggedInUserId) return;
 
-    const fetchChats = async () => {
-      const data = await ChatAPI.getUserChats();
-
-      console.log("chat:",data);
-      setChats(data);
+    const fetchChatsData = async () => {
+      const chatList = await getUserChats();
+      setChats(chatList);
     };
 
+    fetchChatsData();
+    const interval = setInterval(fetchChatsData, 1500);
 
-    fetchChats();
-    const interval = setInterval(fetchChats, 1500); // 1.5s polling
     return () => clearInterval(interval);
   }, [loggedInUserId]);
 
-  // Fetch messages periodically when a chat is selected
+  // Fetch messages for selected chat
   useEffect(() => {
     if (!selectedChat) return;
 
-    const fetchMessages = async () => {
-      const msgs = await ChatAPI.getMessages(selectedChat.id);
-      setMessages(msgs);
+    const fetchMsgs = async () => {
+      const m = await getMessages(selectedChat.id);
+      setMessages(m);
     };
 
-    fetchMessages();
-    const interval = setInterval(fetchMessages, 1500); // 1.5s polling
+    fetchMsgs();
+    const interval = setInterval(fetchMsgs, 60000);
+
     return () => clearInterval(interval);
   }, [selectedChat]);
 
-  // Smooth scroll
+  // Auto scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Selecting a chat
   const selectChat = async (chat: Chat) => {
     setSelectedChat(chat);
 
-    const msgs = await ChatAPI.getMessages(chat.id);
+    const msgs = await getMessages(chat.id);
     setMessages(msgs);
 
+    // Reset unread count
     setChats(prev =>
       prev.map(c => (c.id === chat.id ? { ...c, unreadCount: 0 } : c))
     );
   };
 
+  // Sending message
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedChat) return;
 
-    const message = await ChatAPI.sendMessage({
+    const msg = await sendChatMessage({
       chatId: selectedChat.id,
       text: newMessage,
     });
 
-    setMessages(prev => [...prev, message]);
+    setMessages(prev => [...prev, msg]);
     setNewMessage("");
   };
 
-  // Fake typing indicator using polling
   const handleTyping = () => {
     if (!selectedChat) return;
 
@@ -118,9 +125,13 @@ export default function ChatApp() {
 
   return (
     <div className="flex h-[80vh] border rounded-xl overflow-hidden shadow-lg bg-gray-50">
+
       {/* Chat List */}
       <div className="w-1/3 border-r bg-white flex flex-col">
-        <h2 className="p-4 font-bold text-xl border-b text-gray-700">Chats</h2>
+        <h2 className="p-4 font-bold text-xl border-b text-gray-700">
+          Chats
+        </h2>
+
         <div className="flex-1 overflow-y-auto">
           {chats.map(chat => {
             const otherUser = chat.participants.find(
@@ -166,6 +177,7 @@ export default function ChatApp() {
 
       {/* Messages */}
       <div className="w-2/3 flex flex-col justify-between bg-gray-50">
+
         <div className="p-4 flex-1 overflow-y-auto flex flex-col gap-2">
           {messages.map(msg => {
             const isSender = msg.senderId === loggedInUserId;
@@ -187,8 +199,8 @@ export default function ChatApp() {
 
                 <div
                   className={`px-4 py-2 rounded-2xl break-words shadow-md ${isSender
-                      ? "bg-indigo-500 text-white rounded-br-none"
-                      : "bg-gray-200 text-gray-800 rounded-bl-none"
+                    ? "bg-indigo-500 text-white rounded-br-none"
+                    : "bg-gray-200 text-gray-800 rounded-bl-none"
                     }`}
                 >
                   {msg.text}
@@ -197,7 +209,6 @@ export default function ChatApp() {
             );
           })}
 
-          {/* Typing indicator */}
           {typingUser && (
             <div className="flex items-center gap-2 self-start mt-2">
               <div className="w-8 h-8 rounded-full bg-gray-300 animate-pulse" />
@@ -223,6 +234,7 @@ export default function ChatApp() {
             onKeyDown={e => e.key === "Enter" && sendMessage()}
             placeholder="Type a message..."
           />
+
           <button
             className="bg-indigo-500 hover:bg-purple-500 text-white font-semibold px-6 rounded-r-2xl transition-colors"
             onClick={sendMessage}
@@ -230,6 +242,7 @@ export default function ChatApp() {
             Send
           </button>
         </div>
+
       </div>
     </div>
   );

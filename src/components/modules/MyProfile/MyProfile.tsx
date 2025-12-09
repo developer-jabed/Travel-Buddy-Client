@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { getInitials } from "@/lib/formatters";
 import { updateMyProfile } from "@/services/auth/auth.service";
+import { IAdmin } from "@/types/Admin.interface";
+import { ITravelerProfile } from "@/types/TravelerProfile.interface";
 import { UserInfo } from "@/types/user.interface";
 import { Camera, Loader2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -20,50 +23,75 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [fileData, setFileData] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const isTraveler = userInfo.role === "USER";
 
-  const profileData =
-    userInfo.role === "ADMIN"
-      ? userInfo.Admin
-      : userInfo.role === "MODERATOR"
-      ? userInfo.Moderator
-      : userInfo.TravelerProfile;
+  const profilePhoto = isTraveler
+    ? userInfo.TravelerProfile?.profilePhoto
+    : userInfo.Admin?.profilePhoto;
 
+  const profileData: ITravelerProfile | IAdmin | undefined = isTraveler
+    ? userInfo.TravelerProfile ?? undefined
+    : userInfo.Admin ?? undefined;
 
-  const getActiveStatus = () => {
-    const isActive =
-      userInfo.Admin?.isActive ?? userInfo.Moderator?.isActive ?? null;
-
-    if (isActive === null) return "";
-    return isActive ? "Active" : "Inactive";
-  };
-
-  // --------------------------------------
   // IMAGE PREVIEW
-  // --------------------------------------
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setFileData(file);
 
     const reader = new FileReader();
     reader.onloadend = () => setPreviewImage(reader.result as string);
     reader.readAsDataURL(file);
   };
 
-  // --------------------------------------
-  // FORM SUBMIT
-  // --------------------------------------
+  // SUBMIT
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
 
-    const formData = new FormData(e.currentTarget);
+    const form = new FormData();
+
+    const name = (e.currentTarget.elements.namedItem("name") as HTMLInputElement)
+      .value;
+
+    form.append("name", name);
+
+    if (isTraveler) {
+      const travelerProfile = profileData as ITravelerProfile;
+
+      const fields = [
+        "bio",
+        "interests",
+        "languages",
+        "age",
+        "gender",
+        "travelStyle",
+        "city",
+        "country",
+      ];
+
+      fields.forEach((field) => {
+        const input = e.currentTarget.elements.namedItem(
+          field
+        ) as HTMLInputElement | null;
+        if (input && input.value !== "") {
+          form.append(field, input.value);
+        }
+      });
+    }
+
+    if (fileData) {
+      form.append("file", fileData);
+    }
 
     startTransition(async () => {
-      const result = await updateMyProfile(formData);
+      const result = await updateMyProfile(form);
 
       if (result.success) {
         setSuccess(result.message);
@@ -76,39 +104,51 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">My Profile</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage your personal information
+    <div className="space-y-8 max-w-5xl mx-auto px-4 py-10">
+      <div className="space-y-1">
+        <h1 className="text-4xl font-bold tracking-tight">My Profile</h1>
+        <p className="text-muted-foreground text-base">
+          Update your personal information and account details.
         </p>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* -------------------------------------- */}
-          {/* PROFILE IMAGE CARD */}
-          {/* -------------------------------------- */}
-          <Card className="lg:col-span-1">
+        <div className="grid gap-10 lg:grid-cols-3">
+          {/* PROFILE IMAGE */}
+          <Card className="shadow-md border rounded-2xl">
             <CardHeader>
-              <CardTitle>Profile Picture</CardTitle>
+              <CardTitle className="text-xl font-semibold">
+                Profile Picture
+              </CardTitle>
             </CardHeader>
 
-            <CardContent className="flex flex-col items-center space-y-4">
-              <div className="relative">
-        
+            <CardContent className="flex flex-col items-center space-y-5">
+              <div className="relative group">
+                <Avatar className="h-36 w-36 ring-4 ring-primary/20 shadow-lg">
+                  {previewImage || profilePhoto ? (
+                    <AvatarImage
+                      src={previewImage ?? profilePhoto!}
+                      alt={userInfo.name}
+                    />
+                  ) : (
+                    <AvatarFallback className="text-3xl">
+                      {getInitials(userInfo.name)}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+
                 <label
                   htmlFor="file"
-                  className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90"
+                  className="absolute bottom-2 right-2 bg-primary text-primary-foreground 
+                          rounded-full p-3 cursor-pointer shadow-md hover:scale-110 transition-all"
                 >
-                  <Camera className="h-4 w-4" />
+                  <Camera className="h-5 w-5" />
                 </label>
 
                 <Input
                   id="file"
-                  name="file"
                   type="file"
+                  name="file"
                   accept="image/*"
                   className="hidden"
                   onChange={handleImageChange}
@@ -116,28 +156,26 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
                 />
               </div>
 
-              {/* User Info */}
-              <div className="text-center">
+              <div className="text-center space-y-1">
                 <p className="font-semibold text-lg">
                   {profileData?.name || userInfo.name}
                 </p>
-                <p className="text-sm text-muted-foreground">{userInfo.email}</p>
-                <p className="text-xs text-muted-foreground mt-1 capitalize">
-                  {userInfo.role.toLowerCase()}
+                <p className="text-muted-foreground text-sm">
+                  {userInfo.email}
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          {/* -------------------------------------- */}
-          {/* PROFILE INFO */}
-          {/* -------------------------------------- */}
-          <Card className="lg:col-span-2">
+          {/* DETAILS */}
+          <Card className="lg:col-span-2 shadow-md border rounded-2xl">
             <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
+              <CardTitle className="text-xl font-semibold">
+                Personal Information
+              </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               {error && (
                 <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md text-sm">
                   {error}
@@ -150,45 +188,122 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
                 </div>
               )}
 
-              <div className="grid gap-4 md:grid-cols-2">
-                {/* Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+              {/* NAME + EMAIL */}
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="flex flex-col space-y-2">
+                  <Label className="font-medium text-sm">Full Name</Label>
                   <Input
                     id="name"
                     name="name"
                     defaultValue={profileData?.name || userInfo.name}
-                    required
                     disabled={isPending}
+                    className="h-11"
                   />
                 </div>
 
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" value={userInfo.email} disabled />
+                <div className="flex flex-col space-y-2">
+                  <Label className="font-medium text-sm">Email</Label>
+                  <Input className="h-11" value={userInfo.email} disabled />
                 </div>
-
-                {/* Active Status (Admin / Moderator Only) */}
-                {userInfo.role !== "USER" && (
-                  <div className="space-y-2 md:col-span-2">
-                    <Label>Status</Label>
-                    <Input value={getActiveStatus()} disabled />
-                  </div>
-                )}
               </div>
 
-              {/* Save Button */}
-              <div className="flex justify-end">
-                <Button type="submit" disabled={isPending}>
+              {/* TRAVELER FIELDS */}
+              {isTraveler && (
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* BIO */}
+                  <div className="flex flex-col space-y-2 md:col-span-2">
+                    <Label>Bio</Label>
+                    <Textarea
+                      name="bio"
+                      rows={4}
+                      defaultValue={
+                        (profileData as ITravelerProfile)?.bio ?? ""
+                      }
+                      disabled={isPending}
+                    />
+                  </div>
+
+                  <Input
+                    name="interests"
+                    defaultValue={
+                      (profileData as ITravelerProfile)?.interests?.join(", ") ??
+                      ""
+                    }
+                    disabled={isPending}
+                    className="h-11"
+                  />
+
+                  <Input
+                    name="languages"
+                    defaultValue={
+                      (profileData as ITravelerProfile)?.languages?.join(", ") ??
+                      ""
+                    }
+                    disabled={isPending}
+                    className="h-11"
+                  />
+
+                  <Input
+                    name="age"
+                    type="number"
+                    defaultValue={
+                      (profileData as ITravelerProfile)?.age ?? ""
+                    }
+                    disabled={isPending}
+                    className="h-11"
+                  />
+
+                  <Input
+                    name="gender"
+                    defaultValue={
+                      (profileData as ITravelerProfile)?.gender ?? ""
+                    }
+                    disabled={isPending}
+                    className="h-11"
+                  />
+
+                  <Input
+                    name="travelStyle"
+                    defaultValue={
+                      (profileData as ITravelerProfile)?.travelStyle ?? ""
+                    }
+                    disabled={isPending}
+                    className="h-11"
+                  />
+
+                  <Input
+                    name="city"
+                    defaultValue={
+                      (profileData as ITravelerProfile)?.city ?? ""
+                    }
+                    disabled={isPending}
+                    className="h-11"
+                  />
+
+                  <Input
+                    name="country"
+                    defaultValue={
+                      (profileData as ITravelerProfile)?.country ?? ""
+                    }
+                    disabled={isPending}
+                    className="h-11"
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-end pt-4">
+                <Button
+                  disabled={isPending}
+                  className="h-11 px-6 text-base font-medium shadow-sm"
+                >
                   {isPending ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
                       Updating...
                     </>
                   ) : (
                     <>
-                      <Save className="mr-2 h-4 w-4" />
+                      <Save className="h-5 w-5 mr-2" />
                       Save Changes
                     </>
                   )}

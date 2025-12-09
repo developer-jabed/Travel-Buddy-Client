@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { getRecommendedMatchTravelers } from "@/services/Traveler/RecomendedTraveler";
 
@@ -12,14 +13,10 @@ export default function TravelerRecomended() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
-    // console.log(travelers)
-
     useEffect(() => {
         async function load() {
             const res = await getRecommendedMatchTravelers();
-            if (res.success) {
-                setTravelers(res.data);
-            }
+            if (res.success) setTravelers(res.data);
             setLoading(false);
         }
         load();
@@ -38,12 +35,11 @@ export default function TravelerRecomended() {
     }
 
     return (
-        <div className="p-6 max-w-6xl mx-auto">
-            {/* Center header */}
+        <div className="p-4 sm:p-6 max-w-6xl mx-auto">
             <motion.h1
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-3xl font-bold text-gray-800 mb-8 text-center"
+                className="text-2xl sm:text-3xl font-bold text-gray-800 mb-8 text-center"
             >
                 ✨ Recommended Travel Buddies for You
             </motion.h1>
@@ -53,7 +49,7 @@ export default function TravelerRecomended() {
                     No matching travelers found.
                 </div>
             ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {travelers.map((t, index) => (
                         <motion.div
                             key={t.userId}
@@ -63,26 +59,34 @@ export default function TravelerRecomended() {
                             className="
                                 bg-white rounded-xl shadow-lg p-5 border border-gray-200 
                                 hover:shadow-xl transition duration-300
-                                w-full max-w-sm
-                                flex flex-col justify-between
-                                h-[460px]   /* FIXED CARD HEIGHT */
+                                w-full flex flex-col justify-between
+                                min-h-[450px]
                             "
                         >
                             <div>
-                                {/* Profile Photo */}
+                                {/* Profile Section */}
                                 <div className="flex items-center gap-4">
-                                    <img
-                                        src={t.profilePhoto || "/default-avatar.png"}
-                                        className="w-16 h-16 rounded-full object-cover border"
-                                        alt="profile"
-                                    />
-                                    <div>
-                                        <h2 className="text-xl font-semibold truncate">{t.name}</h2>
-                                        <p className="text-gray-500 text-sm truncate">{t.email}</p>
+                                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border">
+                                        <Image
+                                            src={t.profilePhoto || "/default-avatar.png"}
+                                            alt={t.name}
+                                            fill
+                                            className="object-cover"
+                                            sizes="(max-width: 640px) 64px, (max-width: 768px) 80px, 100px"
+                                        />
+                                    </div>
+
+                                    <div className="min-w-0">
+                                        <h2 className="text-lg sm:text-xl font-semibold truncate">
+                                            {t.name}
+                                        </h2>
+                                        <p className="text-gray-500 text-sm truncate">
+                                            {t.email}
+                                        </p>
                                     </div>
                                 </div>
 
-                                {/* Match percentage */}
+                                {/* Match Score */}
                                 <div className="mt-4">
                                     <div className="flex justify-between mb-1">
                                         <span className="text-sm font-medium text-gray-800">
@@ -92,37 +96,52 @@ export default function TravelerRecomended() {
                                             {t.matchPercentage}%
                                         </span>
                                     </div>
+
                                     <div className="w-full bg-gray-200 rounded-full h-2">
                                         <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${t.matchPercentage}%` }}
-                                            transition={{ duration: 0.8, ease: "easeOut" }}
-                                            className="h-2 rounded-full bg-blue-500"
+                                            transition={{ duration: 0.8 }}
+                                            className="h-2 bg-blue-500 rounded-full"
                                         />
                                     </div>
                                 </div>
 
-                                {/* Details */}
-                                <div className="mt-4 text-sm text-gray-700 space-y-1">
-                                    <p><span className="font-semibold">🌍 Location:</span> {t.city}, {t.country}</p>
-                                    <p><span className="font-semibold">👜 Travel Style:</span> {t.travelStyle}</p>
+                                {/* Traveler Details */}
+                                <div className="mt-4 text-sm text-gray-700 space-y-1 break-words">
+                                    <p>
+                                        <span className="font-semibold">🌍 Location:</span>{" "}
+                                        {t.city}, {t.country}
+                                    </p>
+
+                                    <p>
+                                        <span className="font-semibold">👜 Travel Style:</span>{" "}
+                                        {t.travelStyle}
+                                    </p>
 
                                     <p className="mt-2">
                                         <span className="font-semibold">🎯 Interests:</span>{" "}
-                                        {t.interests?.length > 0 ? t.interests.join(", ") : "No interests"}
+                                        {t.interests?.length > 0
+                                            ? t.interests.join(", ")
+                                            : "No interests"}
                                     </p>
 
                                     <p className="mt-2">
                                         <span className="font-semibold">🗣 Languages:</span>{" "}
-                                        {t.languages?.length > 0 ? t.languages.join(", ") : "No languages"}
+                                        {t.languages?.length > 0
+                                            ? t.languages.join(", ")
+                                            : "No languages"}
                                     </p>
                                 </div>
 
-                                {/* Match reasons */}
+                                {/* Match Reasons */}
                                 {t.matchReasons?.length > 0 && (
-                                    <div className="mt-4 bg-blue-50 p-3 rounded-lg text-sm max-h-20 overflow-y-auto">
-                                        <p className="font-semibold mb-1 text-blue-700">Why you match:</p>
-                                        <ul className="list-disc ml-5 text-blue-600">
+                                    <div className="mt-4 bg-blue-50 p-3 rounded-lg text-sm max-h-24 overflow-y-auto">
+                                        <p className="font-semibold mb-1 text-blue-700">
+                                            Why you match:
+                                        </p>
+
+                                        <ul className="list-disc ml-5 text-blue-600 break-words">
                                             {t.matchReasons.map((r: string, i: number) => (
                                                 <li key={i}>{r}</li>
                                             ))}
@@ -131,13 +150,15 @@ export default function TravelerRecomended() {
                                 )}
                             </div>
 
-                            {/* Replace button with View Details */}
+                            {/* BUTTON */}
                             <div className="mt-5">
                                 <motion.div whileTap={{ scale: 0.9 }}>
                                     <Button
                                         variant="outline"
                                         className="rounded-xl w-full"
-                                        onClick={() => router.push(`/best-match/${t.travelerProfileId}`)}
+                                        onClick={() =>
+                                            router.push(`/best-match/${t.travelerProfileId}`)
+                                        }
                                     >
                                         View Details
                                     </Button>
