@@ -23,19 +23,7 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // --------------------------------------
-  // GET PROFILE PHOTO
-  // --------------------------------------
-  const profilePhoto =
-    userInfo.role === "ADMIN"
-      ? userInfo.Admin?.profilePhoto
-      : userInfo.role === "MODERATOR"
-      ? userInfo.Moderator?.profilePhoto
-      : userInfo.TravelerProfile?.profilePhoto;
 
-  // --------------------------------------
-  // GET PROFILE DATA
-  // --------------------------------------
   const profileData =
     userInfo.role === "ADMIN"
       ? userInfo.Admin
@@ -43,9 +31,7 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
       ? userInfo.Moderator
       : userInfo.TravelerProfile;
 
-  // --------------------------------------
-  // Convert boolean → string for inputs
-  // --------------------------------------
+
   const getActiveStatus = () => {
     const isActive =
       userInfo.Admin?.isActive ?? userInfo.Moderator?.isActive ?? null;
@@ -111,20 +97,7 @@ const MyProfile = ({ userInfo }: MyProfileProps) => {
 
             <CardContent className="flex flex-col items-center space-y-4">
               <div className="relative">
-                <Avatar className="h-32 w-32">
-                  {previewImage || profilePhoto ? (
-                    <AvatarImage
-                      src={previewImage ?? profilePhoto!}
-                      alt={userInfo.name}
-                    />
-                  ) : (
-                    <AvatarFallback className="text-3xl">
-                      {getInitials(userInfo.name)}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-
-                {/* Upload Button */}
+        
                 <label
                   htmlFor="file"
                   className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90"

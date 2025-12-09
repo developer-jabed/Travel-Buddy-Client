@@ -55,8 +55,11 @@ export default function ChatApp() {
 
     const fetchChats = async () => {
       const data = await ChatAPI.getUserChats();
+
+      console.log("chat:",data);
       setChats(data);
     };
+
 
     fetchChats();
     const interval = setInterval(fetchChats, 1500); // 1.5s polling
