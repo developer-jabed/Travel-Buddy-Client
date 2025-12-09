@@ -1,6 +1,8 @@
+"use server"
 import Link from "next/link";
 import { getMyNotifications } from "@/services/Notification/Notification.service";
 import { markNotificationAsReadAction } from "./actions";
+
 
 export default async function NotificationSidebar() {
   const res = await getMyNotifications();
