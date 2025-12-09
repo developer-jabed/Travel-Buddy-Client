@@ -1,3 +1,5 @@
+"use server"
+
 import { serverFetch } from "@/lib/server-fetch";
 
 interface MessagePayload {

@@ -22,12 +22,22 @@ const DashboardSidebarContent = ({
   dashboardHome,
 }: DashboardSidebarContentProps) => {
   const pathname = usePathname();
+
   return (
     <div className="hidden md:flex h-full w-64 flex-col border-r bg-card">
       {/* Logo/Brand */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center justify-between border-b px-6">
         <Link href={dashboardHome} className="flex items-center space-x-2">
           <span className="text-xl font-bold text-primary">Travel Buddy</span>
+        </Link>
+
+        {/* External Home Button */}
+        <Link
+          href="https://travel-buddy-client-chi.vercel.app"
+          target="_blank"
+          className="text-sm text-primary underline"
+        >
+          Home
         </Link>
       </div>
 
@@ -41,6 +51,7 @@ const DashboardSidebarContent = ({
                   {section.title}
                 </h4>
               )}
+
               <div className="space-y-1">
                 {section.items.map((item) => {
                   const isActive = pathname === item.href;
@@ -59,6 +70,7 @@ const DashboardSidebarContent = ({
                     >
                       <Icon className="h-4 w-4" />
                       <span className="flex-1">{item.title}</span>
+
                       {item.badge && (
                         <Badge
                           variant={isActive ? "secondary" : "default"}
@@ -71,6 +83,7 @@ const DashboardSidebarContent = ({
                   );
                 })}
               </div>
+
               {sectionIdx < navItems.length - 1 && (
                 <Separator className="my-4" />
               )}
@@ -87,6 +100,7 @@ const DashboardSidebarContent = ({
               {userInfo.name.charAt(0).toUpperCase()}
             </span>
           </div>
+
           <div className="flex-1 overflow-hidden">
             <p className="text-sm font-medium truncate">{userInfo.name}</p>
             <p className="text-xs text-muted-foreground capitalize">
