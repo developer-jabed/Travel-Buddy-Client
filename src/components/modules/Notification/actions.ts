@@ -5,11 +5,10 @@ import { revalidatePath } from "next/cache";
 
 export async function markNotificationAsReadAction(formData: FormData): Promise<void> {
   const id = formData.get("id") as string;
-
   if (!id) return;
 
-  await markNotificationAsRead(id);
+  await markNotificationAsRead(id).catch(() => {});
 
-  // Refresh notification sidebar page
-  revalidatePath("/"); // <-- set correct path where sidebar is used
+  // Choose the correct path
+  revalidatePath("/"); 
 }

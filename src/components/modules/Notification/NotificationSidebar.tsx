@@ -7,7 +7,7 @@ export default async function NotificationSidebar() {
 
   const notifications = Array.isArray(res?.data) ? res.data : [];
 
-  console.log("notification:",res.data)
+  console.log("notification:", res.data)
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
@@ -29,10 +29,11 @@ export default async function NotificationSidebar() {
             <form
               key={n.id}
               action={markNotificationAsReadAction}
-              className={`p-3 border-b flex justify-between items-center ${
-                n.isRead ? "bg-gray-50" : "bg-white"
-              }`}
+              method="post"
+              className={`p-3 border-b flex justify-between items-center ${n.isRead ? "bg-gray-50" : "bg-white"
+                }`}
             >
+
               <input type="hidden" name="id" value={n.id} />
 
               <div>
