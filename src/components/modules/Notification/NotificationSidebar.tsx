@@ -1,37 +1,14 @@
-"use client";
+import Link from "next/link";
+import { getMyNotifications } from "@/services/Notification/Notification.service";
+import { markNotificationAsReadAction } from "./actions";
 
-import { useState, useEffect } from "react";
-import { INotification } from "@/types/Notification.interface";
-import { getMyNotifications, markNotificationAsRead } from "@/services/Notification/Notification.service";
-import { formatDistanceToNow } from "date-fns";
+export default async function NotificationSidebar() {
+  const res = await getMyNotifications();
 
-export default function NotificationSidebar() {
-  const [notifications, setNotifications] = useState<INotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const notifications = Array.isArray(res?.data) ? res.data : [];
 
-  // Fetch notifications on mount
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      const res = await getMyNotifications();
-      if (res.success) {
-        const data: INotification[] = Array.isArray(res.data) ? res.data : [];
-        setNotifications(data);
-        setUnreadCount(data.filter(n => !n.isRead).length);
-      }
-    };
-
-    fetchNotifications();
-  }, []);
-
-  const handleMarkAsRead = async (id: string) => {
-    const res = await markNotificationAsRead(id);
-    if (res.success) {
-      setNotifications(prev =>
-        prev.map(n => (n.id === id ? { ...n, isRead: true } : n))
-      );
-      setUnreadCount(prev => Math.max(prev - 1, 0));
-    }
-  };
+  console.log("notification:",res.data)
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <div className="fixed left-0 top-16 w-80 h-[calc(100vh-64px)] bg-white shadow-lg overflow-y-auto z-50">
@@ -43,37 +20,47 @@ export default function NotificationSidebar() {
           </span>
         )}
       </div>
+
       <div className="p-2">
         {notifications.length === 0 ? (
           <p className="text-gray-500 text-sm p-2">No notifications</p>
         ) : (
           notifications.map(n => (
-            <div
+            <form
               key={n.id}
-              className={`p-3 border-b cursor-pointer hover:bg-gray-100 flex justify-between items-center ${
+              action={markNotificationAsReadAction}
+              className={`p-3 border-b flex justify-between items-center ${
                 n.isRead ? "bg-gray-50" : "bg-white"
               }`}
             >
+              <input type="hidden" name="id" value={n.id} />
+
               <div>
                 <p className="text-sm">{n.message}</p>
+
                 {n.link && (
-                  <a href={n.link} className="text-blue-600 text-xs mt-1 inline-block">
+                  <Link
+                    href={n.link}
+                    className="text-blue-600 text-xs mt-1 inline-block"
+                  >
                     View
-                  </a>
+                  </Link>
                 )}
+
                 <p className="text-gray-400 text-xs mt-1">
-                  {formatDistanceToNow(new Date(n.createdAt))} ago
+                  {new Date(n.createdAt).toLocaleString()}
                 </p>
               </div>
+
               {!n.isRead && (
                 <button
-                  onClick={() => handleMarkAsRead(n.id)}
+                  type="submit"
                   className="ml-2 text-xs text-blue-500 hover:underline"
                 >
                   Mark read
                 </button>
               )}
-            </div>
+            </form>
           ))
         )}
       </div>
