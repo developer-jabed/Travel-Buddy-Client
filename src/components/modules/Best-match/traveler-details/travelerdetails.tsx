@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { createBuddyRequest } from "@/services/buddyRequest/BuddyRequest";
 import { Router } from "next/router";
 
-/* ------------------ Date Formatter (Hydration Safe) ------------------ */
+
 const DateText = ({ date }: { date: string }) => {
   if (!date) return <span>...</span>;
   return <span suppressHydrationWarning>{new Date(date).toLocaleString()}</span>;
@@ -24,8 +24,7 @@ const router = Router;
 export default function TravelerDetailsClient({ traveler }: any) {
   const reviews = traveler?.user?.reviewsReceived || [];
   const reports = traveler?.user?.reportsReceived || [];
-  // console.log(traveler)
-  /* ------------------ Average Rating ------------------ */
+
   const averageRating = reviews.length
     ? (
       reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /

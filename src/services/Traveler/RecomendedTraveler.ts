@@ -3,34 +3,61 @@
 
 import { serverFetch } from "@/lib/server-fetch";
 
-export async function getRecommendedTravelers(): Promise<any> {
+// ------------------------------------------------------
+// GET RECOMMENDED TRAVELERS (filters + pagination)
+// ------------------------------------------------------
+
+export async function getRecommendedTravelers(
+  queryString: string = ""
+): Promise<{
+  success: boolean;
+  message: string;
+  data: any[];
+  meta: any;
+}> {
   try {
-    const response = await serverFetch.get("/traveler", {
-      cache: "no-store", // always fetch latest
+    const url = queryString ? `/traveler?${queryString}` : `/traveler`;
+
+    const response = await serverFetch.get(url, {
+      cache: "no-store",
       next: { tags: ["recommended-travelers"] },
     });
 
-    const result = await response.json();
-    console.log(result)
-
-    if (!result.success) {
+    if (!response.ok) {
       return {
         success: false,
-        message: result.message || "Failed to fetch recommended travelers",
+        message: `Request failed with status ${response.status}`,
         data: [],
+        meta: null,
+      };
+    }
+
+    const result = await response.json();
+
+    if (!result?.success) {
+      return {
+        success: false,
+        message: result?.message || "Failed to fetch travelers",
+        data: [],
+        meta: result?.meta || null,
       };
     }
 
     return {
       success: true,
-      message: result.message || "Recommended travelers fetched successfully",
-      data: result.data,
+      message: result.message || "Travelers fetched successfully",
+      data: result.data ?? [],
+      meta: result.meta ?? null,
     };
   } catch (error: any) {
     return {
       success: false,
-      message: process.env.NODE_ENV === "development" ? error.message : "Failed to fetch recommended travelers",
+      message:
+        process.env.NODE_ENV === "development"
+          ? error?.message
+          : "Failed to fetch travelers",
       data: [],
+      meta: null,
     };
   }
 }

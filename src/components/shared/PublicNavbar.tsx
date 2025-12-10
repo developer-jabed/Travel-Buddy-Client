@@ -47,10 +47,10 @@ const PublicNavbar = () => {
   };
 
   const navItems = [
-    { href: "/trip", label: "Trip" },
     { href: "/best-match", label: "Traveler" },
-    { href: "/chat", label: "Chat" },
+    { href: "/trip", label: "Trip" },
     { href: "/request", label: "Buddy Request" },
+    { href: "/chat", label: "Chat" },
     { href: "/subscription", label: "Subscription" },
     { href: "/about", label: "About" },
   ];

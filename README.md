@@ -1,109 +1,200 @@
 🌍 Travel Buddy & Meetup – Client Application (Next.js)
-🔗 Live Site: https://your-live-url.com
-🧩 Client Repository: https://github.com/your-username/travelbuddy-client
-🧩 Backend Repository: https://github.com/your-username/travelbuddy-api
-🚀 Overview
 
-The Travel Buddy & Meetup platform is a social-travel application that helps travelers find compatible partners for upcoming trips. The client is built with Next.js (App Router), optimized for performance, SEO, and modern UI/UX.
+A modern social-travel platform that connects travelers, helps users discover compatible travel partners, manage travel plans, and engage with a travel-first community.
 
-This documentation covers:
+🚀 Live & Repositories
 
-How the project works internally
+🔗 Live Site: https://travel-buddy-client-chi.vercel.app/
 
-How routing and authentication are implemented
+🧩 Client Repository: https://github.com/developer-jabed/Travel-Buddy-Client
 
-Dashboard functionality
+🧩 Backend Repository: https://github.com/developer-jabed/Travel-Buddy-Server
 
-Folder architecture
+✨ Overview
 
-Installation and environment setup
+The Travel Buddy client is built with Next.js (App Router), featuring smooth UX, secure authentication, responsive UI, and a powerful dashboard system for both Users and Admins.
 
-✨ Key Features (Client)
+This document covers:
+
+✔ Route structures
+✔ Component behaviors
+✔ Authentication flow
+✔ Dashboard features
+✔ API communication
+✔ Developer setup
+
+⭐ Core Features
 🔐 1. Authentication & Authorization
 
-Fully integrated JWT authentication
+Secure JWT Authentication
 
-Token stored securely (HTTP-only cookie / storage depending on setup)
+Role-Based Access:
 
-Role-based UI
+Traveler/User
 
-Auto-redirect on protected routes
+Admin
 
-Persistent login state using server actions + API routes
+Auto redirect for:
 
-👤 2. User Profiles
+Unauthorized users
 
-Profile creation and editing
+Logged-in users attempting to access login/register
 
-Upload and update profile image (Cloudinary/ImgBB)
+Session persistence using:
 
-Travel interests, visited countries, bio, location
+Cookies
 
-Public profile view for other travelers
+Server Actions
 
-Profile page displays:
+Protected API routes
 
-Avg rating
+Routes:
+
+| Route        | Type      | Description                         |
+| ------------ | --------- | ----------------------------------- |
+| `/login`     | Public    | User login                          |
+| `/register`  | Public    | User registration                   |
+| `/dashboard` | Protected | Auto-select dashboard based on role |
+ 
+
+ 👤 2. User Profile Management
+
+Users can:
+
+Create & edit profile
+
+Upload/update profile images (Cloudinary/ImgBB)
+
+Add bio, interests, gender, travel style, age, languages
+
+Specify location (city, country)
+
+View others' profiles
+
+Public profile displays:
+
+Average rating
 
 Recent reviews
 
 Upcoming travel plans
 
-🧳 3. Travel Plans Management
+User info & travel preferences
+
+Routes:
+
+ | Route           | Type      | Purpose                         |
+ | --------------- | --------- | ------------------------------- |
+ | `/profile`      | Protected | View own profile                |
+ | `/profile/edit` | Protected | Update profile info             |
+ | `/profile/[id]` | Public    | View another traveler’s profile |
+
+🧳 3. Travel Plans
 
 Users can:
 
-Add, edit, delete travel plans
+Add new travel plans
 
-Set travel type, budget, destination, dates, description
+Edit or delete trips
 
-Visibility for others to discover the trip
+Set trip description, dates, budget, travel style
 
-View full details in /travel-plans/[id]
+Join others’ travel plans
 
-Request to join another user’s plan
+Routes:
+| Route                | Purpose                |
+| -------------------- | ---------------------- |
+| `/travel-plans`      | List your travel plans |
+| `/travel-plans/add`  | Create new plan        |
+| `/travel-plans/[id]` | Full plan details      |
 
-🔍 4. Explore & Matching
 
-Dynamic filtering by destination, dates, interests, travel type
+Each plan page includes:
+
+Host details
+
+Destination & travel dates
+
+Trip budget & style
+
+Join Request button
+
+Reviews about the host
+
+🔍 4. Explore & Matching Engine
+
+Smart filtering system:
+
+Destination search (autocomplete)
+
+Date range filtering
+
+Travel style selection
+
+Interests matching
 
 Real-time search
 
-Grid listing with traveler cards
+Route:
 
-Quick profile preview
 
-⭐ 5. Reviews & Ratings
+| Route      | Description                       |
+| ---------- | --------------------------------- |
+| `/explore` | Discover travelers & travel plans |
 
-Leave review after completing a trip
 
-1–5 star rating
+⭐ 5. Review & Rating System
 
-Edit or delete review
+Travelers can:
 
-User profile shows:
+Add a review
+
+Rate users 1–5 stars
+
+Edit or delete their reviews
+
+Profile displays:
 
 Average rating
 
-Trip-based review list
+Reviews with filters
 
-Review & Report buttons available on traveler details page
+Trip history with review options
+
+Routes:
+
+| Route               | Purpose                |
+| ------------------- | ---------------------- |
+| `/reviews/[userId]` | All reviews for a user |
 
 💳 6. Subscription & Payments
 
-Integrated payment gateway (Stripe / SSLCommerz)
-
-Premium features unlock:
+Premium features include:
 
 Verified badge
 
+Priority listing
+
 Advanced matching
 
-Priority listing in Explore page
+Stripe / SSLCommerz integration with:
 
-Payment success/failure callback pages
+Payment form
 
-🛠️ 7. Admin Dashboard
+Success page
+
+Failure page
+
+Routes:
+
+| Route              | Purpose              |
+| ------------------ | -------------------- |
+| `/subscription`    | Subscription pricing |
+| `/payment/success` | Payment successful   |
+| `/payment/fail`    | Payment failed       |
+
+
+🛡️ 7. Admin Dashboard
 
 Admins can manage:
 
@@ -111,16 +202,27 @@ Users
 
 Travel Plans
 
-Reviews & Reports
+Reports
+
+Reviews
 
 Subscription history
 
-Analytics overview
+Platform analytics
 
-The admin interface is integrated into the same Next.js client via role-based routes.
+Route:
+
+| Route              | Description          |
+| ------------------ | -------------------- |
+| `/dashboard/admin` | Admin-only dashboard |
+
+
+
+UI adjusts automatically based on role.
 
 🧩 Project Architecture
-/app
+
+app/
  ├── (auth)/
  │     ├── login/
  │     ├── register/
@@ -138,202 +240,144 @@ The admin interface is integrated into the same Next.js client via role-based ro
  ├── layout.tsx
  └── page.tsx
 
-/components
+components/
  ├── navbar/
  ├── cards/
  ├── forms/
  ├── modals/
  └── ui/
 
-/lib
- ├── api.ts        # API helper with interceptors
- ├── auth.ts       # token handling & role checks
+lib/
+ ├── api.ts
+ ├── auth.ts
  ├── utils.ts
 
-/hooks
+hooks/
  ├── useAuth.ts
  ├── useFetch.ts
  └── useQuery.ts
 
-/context
+context/
  └── AuthProvider.tsx
 
-/styles
+styles/
  ├── globals.css
  └── config.css
 
-🧭 Routing & Flow Explanation
-1. Authentication Routes
-Route	Description
-/login	User login page
-/register	User registration with default role “User”
 
-Login sets:
+🧭 Routing Logic – How Routes Behave
+🔹 Public Routes
 
-accessToken
+Accessible without login.
 
-user data in Auth Context
+/
 
-redirects to /dashboard
+/login
 
-Protected pages use:
+/register
 
-import { getCurrentUser } from "@/lib/auth";
+/explore
 
-2. User Dashboard
+/profile/[id]
 
-The dashboard renders based on role:
+/travel-plans/[id]
 
-🧑‍💼 User Dashboard
+🔹 Protected Routes
 
-Upcoming travel plans
+Require valid JWT.
 
-Recommended matches
+/dashboard
 
-Pending join requests
+/profile
 
-Review requests
+/profile/edit
 
-Subscription status
+/travel-plans
 
-🛡️ Admin Dashboard
+/travel-plans/add
 
-Manage all users
+🔹 Role-Based Routes
+Admin Only:
 
-Manage travel plans
+/dashboard/admin
 
-Review flagged content
+/dashboard/admin/users
 
-Platform analytics
+/dashboard/admin/reports
 
-Conditional layout:
+/dashboard/admin/subscriptions
 
-{user.role === "admin" ? <AdminDashboard /> : <UserDashboard />}
+User Only:
 
-3. Travel Plans
-Route	Purpose
-/travel-plans	List user plans
-/travel-plans/add	Create new plan
-/travel-plans/[id]	Full plan details
+/dashboard/user
 
-Each plan card opens a details page with:
+/reviews/add
 
-Host info
+/join-requests
 
-Trip schedule
+🧪 API Communication
 
-Budget
+All API calls use a centralized helper:
 
-Travel type
+  import api from "@/lib/api";
 
-“Request to Join” button
+  const res = await api.get("/travel-plans");
 
-Reviews about the host
+Features:
 
-4. Explore & Matching
+Token auto-injection
 
-Route: /explore
-Contains filters like:
+Auto-refresh token on 401
 
-Destination (autocomplete)
+Unified error handler
 
-Date range
+Interceptor-based response parsing
 
-Interests
+⚙️ Setup & Installation
+1️⃣ Clone Project
 
-Travel type
-
-Data fetched from backend using dynamic query params.
-
-5. Traveler Details + Review & Report
-
-In /profile/[id] or /travelers/[id], user can:
-
-View traveler’s profile
-
-See rating & reviews
-
-See upcoming trips
-
-Buttons included:
-
-Write Review (opens modal with rating + text)
-
-Report User (sends issue report to admin)
-
-⚙️ Installation & Setup
-1️⃣ Clone the project
-git clone https://github.com/your-username/travelbuddy-client
-cd travelbuddy-client
+git clone https://github.com/developer-jabed/Travel-Buddy-Client
+cd Travel-Buddy-Client
 
 2️⃣ Install dependencies
+
 npm install
 
-3️⃣ Add environment variables
+3️⃣ Environment Setup
 
 Create .env.local:
+  NEXT_PUBLIC_BASE_API_URL=http://localhost:5000/api/v1
+   JWT_SECRET=aaaaaaaaaaa
+   REFRESH_TOKEN_SECRECT==aaaaaaaaaaa
+   4️⃣ Run development server
 
-NEXT_PUBLIC_API_URL=https://your-backend-api.com
-NEXT_PUBLIC_CLOUDINARY_URL=your-cloudinary-upload-url
-NEXT_PUBLIC_PAYMENT_KEY=your-payment-gateway-key
-
-4️⃣ Run locally
-npm run dev
-
-
-App runs at:
-👉 http://localhost:3000
+   npm run dev
+Visit: http://localhost:3000
 
 🛠️ Tech Stack
-Frontend
+Next.js 14+ App Router
 
-Next.js 14+ (App Router)
+Tailwind CSS / Shadcn UI
 
-Tailwind CSS / DaisyUI
+React Query / Zustand
 
-Axios for API calls
+Cloudinary for image hosting
 
-Zustand / Context API
+Framer Motion
 
-React Query (optional)
+JWT Authentication
 
-Cloudinary/ImgBB for images
-
-Framer Motion (optional)
-
-JWT-based auth
-
-Backend
-
-(Node/Express/MongoDB — full details in backend repo)
-
-🧪 API Communication Pattern
-
-Client calls backend using a centralized API helper:
-
-import api from "@/lib/api";
-
-const res = await api.get("/travel-plans");
-
-
-Auto-injects token with interceptors & handles 401 refresh logic.
+Node/Express backend
 
 📦 Deployment
+Frontend: Vercel
 
-Frontend: Vercel 
+Backend: Render
 
-Backend: Render 
+Environment variables configured per deployment
 
-Use production env variables
-
-Configure CORS
-
-SSL certificate mandatory for payment
+Stripe webhooks supported
 
 🤝 Contributing
+PRs and issues welcome on the GitHub repo.
 
-Open PRs, issues, and feature requests are welcome.
-
-📄 License
-
-MIT License.
