@@ -31,7 +31,7 @@ interface TravelerProfile {
 export default function TravelersCart({
     travelers,
     loading,
-    currentUser,
+
 }: {
     travelers: TravelerProfile[];
     loading: boolean;
@@ -42,11 +42,7 @@ export default function TravelersCart({
 
     // ✨ Handle Buddy Request
     const handleSendBuddyRequest = async (receiverId: string) => {
-        if (!currentUser?.id) {
-            toast.error("Please login to send a buddy request");
-            router.push("/login");
-            return;
-        }
+
 
         try {
             const res = await createBuddyRequest({ receiverId });
