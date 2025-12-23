@@ -29,6 +29,7 @@ const AdminFormDialog = ({
 }: IAdminFormDialogProps) => {
     const formRef = useRef<HTMLFormElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const prevStateRef = useRef(null);
     const isEdit = !!admin?.id;
     //   const { isEditMode, state, formAction, isPending } = useAdminForm(admin);
 
@@ -45,6 +46,8 @@ const AdminFormDialog = ({
 
     // Handle success/error from server
     useEffect(() => {
+        if (state === prevStateRef.current) return;
+        prevStateRef.current = state;
         if (state?.success) {
             toast.success(state.message || "Operation successful");
             if (formRef.current) {
@@ -108,7 +111,7 @@ const AdminFormDialog = ({
                             <InputFieldError field="email" state={state} />
                         </Field>
 
-                   
+
 
                         {/* Password Field (Create Mode Only) */}
                         {!isEdit && (
