@@ -64,13 +64,25 @@ export default function ChatApp() {
       setChats(chatList);
     };
 
-    fetchChatsData();
-    const interval = setInterval(fetchChatsData, 1500);
+    fetchChatsData(); // Fetch once
 
-    return () => clearInterval(interval);
+    // No interval, so no need to clear anything
   }, [loggedInUserId]);
 
   // Fetch messages for selected chat
+  // Fetch chats once when user is available
+  useEffect(() => {
+    if (!loggedInUserId) return;
+
+    const fetchChatsData = async () => {
+      const chatList = await getUserChats();
+      setChats(chatList);
+    };
+
+    fetchChatsData();
+  }, [loggedInUserId]);
+
+  // Fetch messages once when chat is selected
   useEffect(() => {
     if (!selectedChat) return;
 
@@ -80,15 +92,8 @@ export default function ChatApp() {
     };
 
     fetchMsgs();
-    const interval = setInterval(fetchMsgs, 60000);
-
-    return () => clearInterval(interval);
   }, [selectedChat]);
 
-  // Auto scroll
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   // Selecting a chat
   const selectChat = async (chat: Chat) => {
@@ -211,8 +216,8 @@ export default function ChatApp() {
 
                 <div
                   className={`px-3 sm:px-4 py-2 rounded-2xl break-words shadow-md ${isSender
-                      ? "bg-indigo-500 text-white rounded-br-none"
-                      : "bg-gray-200 text-gray-800 rounded-bl-none"
+                    ? "bg-indigo-500 text-white rounded-br-none"
+                    : "bg-gray-200 text-gray-800 rounded-bl-none"
                     }`}
                 >
                   {msg.text}

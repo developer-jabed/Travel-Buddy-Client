@@ -31,14 +31,7 @@ const DashboardSidebarContent = ({
           <span className="text-xl font-bold text-primary">Travel Buddy</span>
         </Link>
 
-        {/* External Home Button */}
-        <Link
-          href="https://travel-buddy-client-chi.vercel.app"
-          target="_blank"
-          className="text-sm text-primary underline"
-        >
-          Home
-        </Link>
+ 
       </div>
 
       {/* Navigation */}

@@ -1,173 +1,254 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { getRecommendedMatchTravelers } from "@/services/Traveler/RecomendedTraveler";
+import { ChevronLeft, ChevronRight, Users } from "lucide-react";
 
-export default function TravelerRecomended() {
+const VISIBLE_CARDS = 2;
+const AUTO_SLIDE_DELAY = 4500;
+
+export default function TravelerRecommendedCarousel() {
     const [travelers, setTravelers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [index, setIndex] = useState(0);
     const router = useRouter();
 
+    /* ================= FETCH ================= */
     useEffect(() => {
-        async function load() {
+        (async () => {
             const res = await getRecommendedMatchTravelers();
-            if (res.success) setTravelers(res.data);
+            if (res?.success) setTravelers(res.data || []);
             setLoading(false);
-        }
-        load();
+        })();
     }, []);
 
+    /* ================= SLIDES ================= */
+    const slides = useMemo(() => {
+        const result = [];
+        for (let i = 0; i < travelers.length; i += VISIBLE_CARDS) {
+            result.push(travelers.slice(i, i + VISIBLE_CARDS));
+        }
+        return result;
+    }, [travelers]);
+
+    /* ================= AUTO SLIDE ================= */
+    useEffect(() => {
+        if (slides.length <= 1) return;
+        const timer = setInterval(() => {
+            setIndex((prev) => (prev + 1) % slides.length);
+        }, AUTO_SLIDE_DELAY);
+        return () => clearInterval(timer);
+    }, [slides.length]);
+
+    /* ================= LOADING ================= */
     if (loading) {
         return (
-            <div className="w-full flex justify-center py-20">
+            <section className="relative mt-5 py-28 flex flex-col w-[95%] mx-auto items-center justify-center bg-gray-200">
                 <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                    className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full"
+                    transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                    className="w-14 h-14 rounded-full border-[3px] border-primary border-t-transparent"
                 />
-            </div>
+                <p className="mt-6 text-sm text-muted-foreground">
+                    Finding perfect travel buddies...
+                </p>
+            </section>
         );
     }
 
-    return (
-        <div className="p-4 sm:p-6 max-w-6xl mx-auto">
-            <motion.h1
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-2xl sm:text-3xl font-bold text-gray-800 mb-8 text-center"
-            >
-                ✨ Recommended Travel Buddies for You
-            </motion.h1>
+    /* ================= EMPTY STATE ================= */
+    if (!loading && slides.length === 0) {
+        return (
+            <section className="relative py-28 w-[94%] mx-auto bg-gray-200 rounded-lg">
+                <div className="max-w-xl mx-auto text-center px-4">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        className="bg-white/80 border border-gray-200 rounded-2xl p-8 shadow-md"
+                    >
+                        <div className="flex justify-center mb-4">
+                            <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center">
+                                <Users className="w-7 h-7 text-gray-600" />
+                            </div>
+                        </div>
 
-            {travelers.length === 0 ? (
-                <div className="text-center text-gray-500 text-lg">
-                    No matching travelers found.
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {travelers.map((t, index) => (
-                        <motion.div
-                            key={t.userId}
-                            initial={{ opacity: 0, y: 40 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="
-                                bg-white rounded-xl shadow-lg p-5 border border-gray-200 
-                                hover:shadow-xl transition duration-300
-                                w-full flex flex-col justify-between
-                                min-h-[450px]
-                            "
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800">
+                            No travel suggestions yet
+                        </h3>
+
+                        <p className="text-sm text-gray-500 mb-6">
+                            If you are an admin, this section will show users once they complete
+                            their profiles.
+                            <br />
+                            Travelers will see suggestions after adding full information and
+                            matching with others.
+                        </p>
+
+                        <Button
+                            onClick={() => router.push("/my-profile")}
+                            className="rounded-xl"
                         >
-                            <div>
-                                {/* Profile Section */}
-                                <div className="flex items-center gap-4">
-                                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border">
-                                        <Image
-                                            src={t.profilePhoto || "/default-avatar.png"}
-                                            alt={t.name}
-                                            fill
-                                            className="object-cover"
-                                            sizes="(max-width: 640px) 64px, (max-width: 768px) 80px, 100px"
-                                        />
-                                    </div>
+                            Complete Your Profile
+                        </Button>
+                    </motion.div>
+                </div>
+            </section>
+        );
+    }
 
-                                    <div className="min-w-0">
-                                        <h2 className="text-lg sm:text-xl font-semibold truncate">
-                                            {t.name}
-                                        </h2>
-                                        <p className="text-gray-500 text-sm truncate">
-                                            {t.email}
-                                        </p>
-                                    </div>
-                                </div>
+    /* ================= UI ================= */
+    return (
+        <section className="relative py-24 w-[95%] mx-auto mt-5 bg-gray-200 overflow-hidden rounded-lg">
+            {/* subtle blurred circles for depth */}
+            <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -top-32 -left-32 w-[400px] h-[400px] rounded-full bg-gray-200/30 blur-3xl" />
+                <div className="absolute -bottom-32 -right-32 w-[400px] h-[400px] rounded-full bg-gray-300/20 blur-3xl" />
+            </div>
 
-                                {/* Match Score */}
-                                <div className="mt-4">
-                                    <div className="flex justify-between mb-1">
-                                        <span className="text-sm font-medium text-gray-800">
-                                            Match Score
-                                        </span>
-                                        <span className="text-sm font-bold text-blue-600">
-                                            {t.matchPercentage}%
-                                        </span>
-                                    </div>
+            <div className="relative max-w-7xl mx-auto px-4">
+                {/* TITLE */}
+                <motion.h2
+                    initial={{ opacity: 0, y: -16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-2xl sm:text-3xl font-bold text-center mb-12 text-gray-800"
+                >
+                    ✨ Recommended Travel Buddies
+                </motion.h2>
 
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${t.matchPercentage}%` }}
-                                            transition={{ duration: 0.8 }}
-                                            className="h-2 bg-blue-500 rounded-full"
-                                        />
-                                    </div>
-                                </div>
+                {/* CAROUSEL WRAPPER */}
+                <div className="relative flex items-center">
+                    {/* LEFT BUTTON */}
+                    {slides.length > 1 && (
+                        <button
+                            onClick={() =>
+                                setIndex((prev) => (prev - 1 + slides.length) % slides.length)
+                            }
+                            className="hidden md:flex absolute -left-16 z-10 bg-white border border-gray-200 rounded-full p-2 shadow hover:bg-gray-100 transition"
+                        >
+                            <ChevronLeft className="w-5 h-5 text-gray-600" />
+                        </button>
+                    )}
 
-                                {/* Traveler Details */}
-                                <div className="mt-4 text-sm text-gray-700 space-y-1 break-words">
-                                    <p>
-                                        <span className="font-semibold">🌍 Location:</span>{" "}
-                                        {t.city}, {t.country}
-                                    </p>
-
-                                    <p>
-                                        <span className="font-semibold">👜 Travel Style:</span>{" "}
-                                        {t.travelStyle}
-                                    </p>
-
-                                    <p className="mt-2">
-                                        <span className="font-semibold">🎯 Interests:</span>{" "}
-                                        {t.interests?.length > 0
-                                            ? t.interests.join(", ")
-                                            : "No interests"}
-                                    </p>
-
-                                    <p className="mt-2">
-                                        <span className="font-semibold">🗣 Languages:</span>{" "}
-                                        {t.languages?.length > 0
-                                            ? t.languages.join(", ")
-                                            : "No languages"}
-                                    </p>
-                                </div>
-
-                                {/* Match Reasons */}
-                                {t.matchReasons?.length > 0 && (
-                                    <div className="mt-4 bg-blue-50 p-3 rounded-lg text-sm max-h-24 overflow-y-auto">
-                                        <p className="font-semibold mb-1 text-blue-700">
-                                            Why you match:
-                                        </p>
-
-                                        <ul className="list-disc ml-5 text-blue-600 break-words">
-                                            {t.matchReasons.map((r: string, i: number) => (
-                                                <li key={i}>{r}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* BUTTON */}
-                            <div className="mt-5">
-                                <motion.div whileTap={{ scale: 0.9 }}>
-                                    <Button
-                                        variant="outline"
-                                        className="rounded-xl w-full"
-                                        onClick={() =>
-                                            router.push(`/best-match/${t.travelerProfileId}`)
+                    {/* SLIDES */}
+                    <div className="flex-1 overflow-hidden">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={index}
+                                initial={{ x: 120, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                exit={{ x: -120, opacity: 0 }}
+                                transition={{ duration: 0.5, ease: "easeOut" }}
+                                className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+                            >
+                                {slides[index].map((traveler: any) => (
+                                    <TravelerCard
+                                        key={traveler.travelerProfileId}
+                                        traveler={traveler}
+                                        onView={() =>
+                                            router.push(`/best-match/${traveler.travelerProfileId}`)
                                         }
-                                    >
-                                        View Details
-                                    </Button>
-                                </motion.div>
-                            </div>
-                        </motion.div>
+                                    />
+                                ))}
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+
+                    {/* RIGHT BUTTON */}
+                    {slides.length > 1 && (
+                        <button
+                            onClick={() =>
+                                setIndex((prev) => (prev + 1) % slides.length)
+                            }
+                            className="hidden md:flex absolute -right-16 z-10 bg-white border border-gray-200 rounded-full p-2 shadow hover:bg-gray-100 transition"
+                        >
+                            <ChevronRight className="w-5 h-5 text-gray-600" />
+                        </button>
+                    )}
+                </div>
+
+                {/* DOTS */}
+                <div className="flex justify-center gap-2 mt-8">
+                    {slides.map((_, i) => (
+                        <button
+                            key={i}
+                            onClick={() => setIndex(i)}
+                            className={`h-2 rounded-full transition-all ${i === index ? "bg-primary w-6" : "bg-gray-400 w-2"
+                                }`}
+                        />
                     ))}
                 </div>
-            )}
-        </div>
+            </div>
+        </section>
+    );
+}
+
+/* ================= CARD ================= */
+
+function TravelerCard({
+    traveler,
+    onView,
+}: {
+    traveler: any;
+    onView: () => void;
+}) {
+    return (
+        <motion.div
+            whileHover={{ y: -6 }}
+            className="bg-gray-200 backdrop-blur border border-gray-200 rounded-2xl p-6 shadow-md"
+        >
+            <div className="flex items-center gap-4">
+                <div className="relative w-16 h-16 rounded-full overflow-hidden border">
+                    <Image
+                        src={traveler.profilePhoto || "/default-avatar.png"}
+                        alt={traveler.name}
+                        fill
+                        className="object-cover"
+                    />
+                </div>
+
+                <div className="min-w-0">
+                    <h3 className="text-lg font-semibold truncate text-gray-800">
+                        {traveler.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 truncate">
+                        {traveler.city}, {traveler.country}
+                    </p>
+                </div>
+            </div>
+
+            <div className="mt-5">
+                <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-600">Match Score</span>
+                    <span className="font-semibold text-primary">{traveler.matchPercentage}%</span>
+                </div>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${traveler.matchPercentage}%` }}
+                        transition={{ duration: 0.8 }}
+                        className="h-full bg-primary"
+                    />
+                </div>
+            </div>
+
+            <div className="mt-4 text-sm text-gray-600 space-y-1">
+                <p>👜 {traveler.travelStyle}</p>
+                <p>🎯 {traveler.interests?.slice(0, 3).join(", ")}</p>
+                <p>🗣 {traveler.languages?.slice(0, 3).join(", ")}</p>
+            </div>
+
+            <div className="mt-6">
+                <Button variant="outline" className="w-full rounded-xl" onClick={onView}>
+                    View Details
+                </Button>
+            </div>
+        </motion.div>
     );
 }

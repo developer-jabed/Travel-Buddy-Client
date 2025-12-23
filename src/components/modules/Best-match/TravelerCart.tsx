@@ -31,7 +31,6 @@ interface TravelerProfile {
 export default function TravelersCart({
     travelers,
     loading,
-
 }: {
     travelers: TravelerProfile[];
     loading: boolean;
@@ -42,8 +41,6 @@ export default function TravelersCart({
 
     // ✨ Handle Buddy Request
     const handleSendBuddyRequest = async (receiverId: string) => {
-
-
         try {
             const res = await createBuddyRequest({ receiverId });
 
@@ -57,7 +54,7 @@ export default function TravelersCart({
         }
     };
 
-    if (loading) return <p className="text-center">Loading...</p>;
+    if (loading) return <p className="text-center text-gray-500 py-10">Loading...</p>;
 
     if (!travelers?.length)
         return <p className="text-gray-500 text-center mt-6">No travelers found</p>;
@@ -65,11 +62,16 @@ export default function TravelersCart({
     const renderStars = (avgRating?: number | null) => {
         const rating = Math.round(avgRating || 0);
         return (
-            <div className="flex">
+            <div className="flex gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
-                    <span key={i} className={i < rating ? "text-yellow-500" : "text-gray-300"}>
+                    <motion.span
+                        key={i}
+                        className={i < rating ? "text-yellow-400" : "text-gray-300"}
+                        whileHover={{ scale: 1.3, color: "#FFD700" }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                    >
                         ★
-                    </span>
+                    </motion.span>
                 ))}
             </div>
         );
@@ -77,7 +79,7 @@ export default function TravelersCart({
 
     return (
         <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {travelers.map(
                     (
                         traveler: TravelerProfile & {
@@ -95,19 +97,27 @@ export default function TravelersCart({
                         const isVerified = traveler.user?.isVerified;
 
                         return (
-                            <div
+                            <motion.div
                                 key={id}
-                                className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition"
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                transition={{ type: "spring", stiffness: 200 }}
+                                className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-2xl transition"
                             >
                                 {/* Header */}
                                 <div className="flex items-center p-4 gap-3 border-b border-gray-200">
-                                    <Image
-                                        src={traveler.profilePhoto || "/default-avatar.png"}
-                                        alt={name}
-                                        width={48}
-                                        height={48}
-                                        className="rounded-full object-cover border-2 border-indigo-400"
-                                    />
+                                    <motion.div
+                                        whileHover={{ scale: 1.1, rotate: 5 }}
+                                        transition={{ type: "spring", stiffness: 300 }}
+                                        className="w-14 h-14 relative flex-shrink-0"
+                                    >
+                                        <Image
+                                            src={traveler.profilePhoto || "/default-avatar.png"}
+                                            alt={name}
+                                            fill
+                                            className="rounded-full object-cover border-2 border-indigo-400 shadow-md"
+                                        />
+                                    </motion.div>
 
                                     <div className="flex-1">
                                         <p className="text-gray-800 font-semibold">{name}</p>
@@ -120,19 +130,25 @@ export default function TravelersCart({
 
                                     <div className="ml-2">
                                         {isVerified ? (
-                                            <span className="bg-green-600 text-white px-2 py-1 rounded-full text-xs">
+                                            <motion.span
+                                                whileHover={{ scale: 1.1 }}
+                                                className="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-sm"
+                                            >
                                                 Verified
-                                            </span>
+                                            </motion.span>
                                         ) : (
-                                            <span className="bg-red-600 text-white px-2 py-1 rounded-full text-xs">
+                                            <motion.span
+                                                whileHover={{ scale: 1.1 }}
+                                                className="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-sm"
+                                            >
                                                 Not Verified
-                                            </span>
+                                            </motion.span>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Body */}
-                                <div className="p-4 space-y-2">
+                                <div className="p-4 space-y-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             {renderStars(traveler.avgRating)}
@@ -148,31 +164,33 @@ export default function TravelersCart({
 
                                     <div className="flex flex-wrap gap-2 mt-2">
                                         {traveler.interests?.slice(0, 6).map((i) => (
-                                            <span
+                                            <motion.span
                                                 key={i}
-                                                className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs"
+                                                whileHover={{ scale: 1.2, rotate: [-2, 2, 0] }}
+                                                transition={{ type: "spring", stiffness: 300 }}
+                                                className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-medium cursor-pointer hover:bg-indigo-200"
                                             >
                                                 {i}
-                                            </span>
+                                            </motion.span>
                                         ))}
                                     </div>
 
-                                    {/* 🔥 Newly Added Buttons */}
+                                    {/* Buttons */}
                                     <div className="mt-4 pt-3 border-t flex justify-between gap-3">
-                                        <motion.div whileTap={{ scale: 0.9 }}>
+                                        <motion.div whileTap={{ scale: 0.95 }}>
                                             <Button
                                                 variant="outline"
-                                                className="rounded-xl w-28"
+                                                className="rounded-xl w-28 hover:scale-105 transition-transform"
                                                 onClick={() => router.push(`/best-match/${traveler.id}`)}
                                             >
                                                 View Details
                                             </Button>
                                         </motion.div>
 
-                                        <motion.div whileTap={{ scale: 0.9 }}>
+                                        <motion.div whileTap={{ scale: 0.95 }}>
                                             <Button
                                                 variant="default"
-                                                className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white w-32"
+                                                className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white w-32 shadow-md hover:shadow-xl transition-all"
                                                 onClick={() => handleSendBuddyRequest(traveler.user?.id as string)}
                                             >
                                                 Send Request
@@ -180,7 +198,7 @@ export default function TravelersCart({
                                         </motion.div>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         );
                     }
                 )}
@@ -188,8 +206,14 @@ export default function TravelersCart({
 
             {/* Popup Profile */}
             {selectedTraveler && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-md relative">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+                >
+                    <div className="bg-white rounded-lg shadow-xl p-6 w-11/12 max-w-md relative">
                         <button
                             className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
                             onClick={() => setSelectedTraveler(null)}
@@ -198,35 +222,33 @@ export default function TravelersCart({
                         </button>
 
                         <div className="flex flex-col items-center gap-4">
-                            <Image
-                                src={selectedTraveler.profilePhoto || "/default-avatar.png"}
-                                alt={selectedTraveler.name ?? "Traveler"}
-                                width={96}
-                                height={96}
-                                className="rounded-full border-2 border-indigo-400"
-                            />
+                            <motion.div
+                                whileHover={{ scale: 1.1, rotate: 3 }}
+                                className="w-24 h-24 relative"
+                            >
+                                <Image
+                                    src={selectedTraveler.profilePhoto || "/default-avatar.png"}
+                                    alt={selectedTraveler.name ?? "Traveler"}
+                                    fill
+                                    className="rounded-full border-2 border-indigo-400 shadow-md object-cover"
+                                />
+                            </motion.div>
 
-                            <h2 className="text-xl font-bold">
-                                {selectedTraveler.name ?? "—"}
-                            </h2>
-
+                            <h2 className="text-xl font-bold">{selectedTraveler.name ?? "—"}</h2>
                             <p className="text-gray-500">{selectedTraveler.email ?? "—"}</p>
-
                             <p className="text-gray-400 text-sm">
                                 {selectedTraveler.city ?? "—"}, {selectedTraveler.country ?? "—"} •{" "}
                                 {selectedTraveler.travelStyle ?? "—"}
                             </p>
-
                             <p className="text-gray-600 text-sm">
                                 Interests: {selectedTraveler.interests?.join(", ") || "None"}
                             </p>
-
                             <p className="text-gray-600 text-sm">
                                 Languages: {selectedTraveler.languages?.join(", ") || "N/A"}
                             </p>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             )}
         </>
     );

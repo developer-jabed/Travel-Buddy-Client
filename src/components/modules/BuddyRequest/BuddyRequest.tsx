@@ -2,8 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getReceivedBuddyRequests } from "@/services/buddyRequest/BuddyRequest";
-import { updateBuddyRequest } from "@/services/buddyRequest/BuddyRequest";
+import { getReceivedBuddyRequests, updateBuddyRequest } from "@/services/buddyRequest/BuddyRequest";
 import {
   Card,
   CardHeader,
@@ -21,6 +20,8 @@ interface IBuddyRequest {
   sender: { id: string; name: string; email: string };
   receiver: { id: string; name: string; email: string };
   status: string;
+  updatedAt?: string;
+  createdAt?: string;
   trip?: any | null;
 }
 
@@ -35,7 +36,6 @@ export default function BuddyRequestsPage() {
 
     try {
       const res = await getReceivedBuddyRequests();
-      // console.log("Received →", res);
 
       if (res.success && res.data?.data) {
         setRequests(res.data.data);
@@ -55,9 +55,7 @@ export default function BuddyRequestsPage() {
     const res = await updateBuddyRequest(id, { status });
 
     if (res.success) {
-      toast.success(`Request ${status.toLowerCase()} successfully!`, {
-        id: toastId,
-      });
+      toast.success(`Request ${status.toLowerCase()} successfully!`, { id: toastId });
       fetchRequests();
     } else {
       toast.error(res.message || "Failed to update", { id: toastId });
@@ -78,22 +76,21 @@ export default function BuddyRequestsPage() {
     return (
       <div className="text-center mt-10">
         <p className="text-gray-500 mb-4">No buddy requests found.</p>
-        <Link
-          href="/sent-request"
-          className="text-indigo-600 underline font-semibold"
-        >
+        <Link href="/sent-request" className="text-indigo-600 underline font-semibold">
           View My Sent Requests
         </Link>
       </div>
     );
 
+  const formatDate = (date?: string) =>
+    date ? new Date(date).toLocaleString() : "—";
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold text-gray-900">
           Received Buddy Requests
         </h1>
-
         <Link href="/sent-request">
           <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
             View My Sent Requests
@@ -101,49 +98,44 @@ export default function BuddyRequestsPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {requests.map((req) => (
           <Card
             key={req.id}
-            className="flex flex-col justify-between border-gray-200 shadow-md hover:shadow-xl transition duration-300 rounded-xl"
+            className="flex flex-col justify-between border-gray-200 shadow-md hover:shadow-2xl transition duration-300 rounded-xl hover:scale-105"
           >
             <CardHeader className="bg-indigo-50 p-4">
-              <CardTitle className="text-lg font-semibold text-gray-800">
+              <CardTitle className="text-lg font-semibold text-gray-800 truncate">
                 {req.sender.name} → {req.receiver.name}
               </CardTitle>
-              <CardDescription className="text-gray-500 text-sm">
+              <CardDescription className="text-gray-500 text-sm truncate">
                 {req.sender.email} → {req.receiver.email}
               </CardDescription>
+              <p className="text-xs text-gray-400 mt-1">
+                Updated: {formatDate(req.updatedAt)} | Created: {formatDate(req.createdAt)}
+              </p>
             </CardHeader>
 
             <CardContent className="p-5 space-y-3 text-gray-700">
               <span
-                className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  req.status === "PENDING"
+                className={`px-2 py-1 rounded-full text-xs font-semibold ${req.status === "PENDING"
                     ? "bg-yellow-100 text-yellow-800"
                     : req.status === "ACCEPTED"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
               >
                 {req.status}
               </span>
 
               {req.trip && (
                 <div className="space-y-1">
-                  <h2 className="text-lg font-semibold">
-                    {req.trip.title || req.trip.id}
-                  </h2>
-                  <p className="text-gray-500 text-sm">
-                    {req.trip.description || "No description provided"}
-                  </p>
+                  <h2 className="text-lg font-semibold truncate">{req.trip.title || req.trip.id}</h2>
+                  <p className="text-gray-500 text-sm truncate">{req.trip.description || "No description"}</p>
 
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>
-                      <strong>Destination:</strong> {req.trip.destination}
-                    </span>
-                    <span>
-                      <strong>Budget:</strong>{" "}
+                    <span><strong>Destination:</strong> {req.trip.destination}</span>
+                    <span><strong>Budget:</strong>{" "}
                       <span className="text-indigo-600 font-bold">
                         {req.trip.budget ?? "N/A"}
                       </span>
@@ -151,14 +143,8 @@ export default function BuddyRequestsPage() {
                   </div>
 
                   <div className="flex justify-between text-gray-500 text-sm">
-                    <span>
-                      <strong>Start:</strong>{" "}
-                      {new Date(req.trip.startDate).toLocaleDateString()}
-                    </span>
-                    <span>
-                      <strong>End:</strong>{" "}
-                      {new Date(req.trip.endDate).toLocaleDateString()}
-                    </span>
+                    <span><strong>Start:</strong> {formatDate(req.trip.startDate)}</span>
+                    <span><strong>End:</strong> {formatDate(req.trip.endDate)}</span>
                   </div>
                 </div>
               )}
