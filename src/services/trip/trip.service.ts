@@ -5,6 +5,7 @@ import { serverFetch } from "@/lib/server-fetch";
 import { zodValidator } from "@/lib/zodValidator";
 // import { ITrip } from "@/types/trip.interface";
 import { createTripSchema, updateTripSchema } from "@/zod/trip.validation";
+import { revalidateTag } from "next/cache";
 
 // -----------------------------
 // -----------------------------
@@ -39,7 +40,15 @@ export async function createTrip(formData: FormData): Promise<any> {
       body: JSON.stringify(validated.data),
     });
 
-    return await response.json();
+    const result = await response.json();
+    if (result.success) {
+      revalidateTag("trips-list", { expire: 0 });
+      revalidateTag("trips-pages-1", { expire: 0 });// assuming new trip appears on first page
+      revalidateTag("trips-search-all", { expire: 0 });// assuming new trip appears in general search
+    }
+
+    return result;
+
   } catch (error: any) {
     return {
       success: false,
@@ -55,7 +64,19 @@ export async function createTrip(formData: FormData): Promise<any> {
 // -----------------------------
 export async function getAllTrips(queryString?: string): Promise<any> {
   try {
-    const response = await serverFetch.get(`/trips${queryString ? `?${queryString}` : ""}`);
+    const searchParams = new URLSearchParams(queryString);
+    const page = searchParams.get("page") || "1";
+    const searchTerm = searchParams.get("searchTerm") || "";
+    const response = await serverFetch.get(`/trips${queryString ? `?${queryString}` : ""}`, {
+      next: {
+        tags: [
+          "trips-list",
+          `trips-pages-${page}`,
+          `trips-search-${searchTerm || "all"}`
+        ],
+        revalidate: 180,
+      }
+    });
     return await response.json();
   } catch (error: any) {
     return {
@@ -70,7 +91,12 @@ export async function getAllTrips(queryString?: string): Promise<any> {
 // -----------------------------
 export async function getOwnTrips(queryString?: string): Promise<any> {
   try {
-    const response = await serverFetch.get(`/trips/own${queryString ? `?${queryString}` : ""}`);
+    const response = await serverFetch.get(`/trips/own${queryString ? `?${queryString}` : ""}`, {
+      next: {
+        tags: ["trips-list"],
+        revalidate: 180,
+      }
+    });
     return await response.json();
   } catch (error: any) {
     return {
@@ -85,7 +111,12 @@ export async function getOwnTrips(queryString?: string): Promise<any> {
 // -----------------------------
 export async function getTripById(id: string): Promise<any> {
   try {
-    const response = await serverFetch.get(`/trips/${id}`);
+    const response = await serverFetch.get(`/trips/${id}`, {
+      next: {
+        tags: [`trip-${id}`, `trip-details-${id}`, "trips-list"],
+        revalidate: 180,
+      }
+    });
     return await response.json();
   } catch (error: any) {
     return {
@@ -123,7 +154,15 @@ export async function updateTrip(id: string, payload: any): Promise<any> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(validated.data),
     });
-    return await response.json();
+    const result = await response.json();
+
+    if (result.success) {
+      revalidateTag("trips-list", { expire: 0 });
+      revalidateTag("trips-pages-1", { expire: 0 });// assuming new trip appears on first page
+      revalidateTag("trips-search-all", { expire: 0 });// assuming new trip appears in general search
+    }
+
+    return result;
   } catch (error: any) {
     return {
       success: false,
@@ -139,7 +178,15 @@ export async function updateTrip(id: string, payload: any): Promise<any> {
 export async function deleteTrip(id: string): Promise<any> {
   try {
     const response = await serverFetch.delete(`/trips/${id}`);
-    return await response.json();
+    const result = await response.json();
+
+    if (result.success) {
+      revalidateTag("trips-list", { expire: 0 });
+      revalidateTag("trips-pages-1", { expire: 0 });// assuming new trip appears on first page
+      revalidateTag("trips-search-all", { expire: 0 });// assuming new trip appears in general search
+    }
+
+    return result;
   } catch (error: any) {
     return {
       success: false,
@@ -153,7 +200,12 @@ export async function deleteTrip(id: string): Promise<any> {
 // -----------------------------
 export async function getRecommendedBuddies(tripId: string): Promise<any> {
   try {
-    const response = await serverFetch.get(`/trips/recommendations?tripId=${tripId}`);
+    const response = await serverFetch.get(`/trips/recommendations?tripId=${tripId}`, {
+      next: {
+        tags: [`trip-recommendations-${tripId}`],
+        revalidate: 360,
+      }
+    });
     return await response.json();
   } catch (error: any) {
     return {

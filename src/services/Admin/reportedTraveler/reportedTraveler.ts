@@ -2,6 +2,7 @@
 "use server";
 
 import { serverFetch } from "@/lib/server-fetch";
+import { revalidateTag } from "next/cache";
 
 /**
  * GET ALL REPORTS
@@ -9,7 +10,9 @@ import { serverFetch } from "@/lib/server-fetch";
  */
 export async function getReports() {
   try {
-    const response = await serverFetch.get("/report");
+    const response = await serverFetch.get("/report", {
+      next: { tags: ["reports-list"], revalidate: 180 }
+    });
     return await response.json();
   } catch (error: any) {
     console.error("Get reports error:", error);
@@ -29,7 +32,9 @@ export async function getReports() {
  */
 export async function getReportById(id: string) {
   try {
-    const response = await serverFetch.get(`/report/${id}`);
+    const response = await serverFetch.get(`/report/${id}`, {
+      next: { tags: [`report-${id}`, "reports-list"], revalidate: 180 }
+    });
     return await response.json();
   } catch (error: any) {
     console.error("Get report error:", error);
@@ -57,8 +62,13 @@ export async function updateReportStatus(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
+    const result = await response.json();
 
-    return await response.json();
+    if (result.success) {
+      revalidateTag("reports-list", { expire: 0 });
+      revalidateTag("reports-page-1", { expire: 0 });
+    }
+    return result;
   } catch (error: any) {
     console.error("Update report status error:", error);
     return {
@@ -78,7 +88,13 @@ export async function updateReportStatus(
 export async function deleteReport(id: string) {
   try {
     const response = await serverFetch.delete(`/report/${id}`);
-    return await response.json();
+    const result = await response.json();
+
+    if (result.success) {
+      revalidateTag("reports-list", { expire: 0 });
+      revalidateTag("reports-page-1", { expire: 0 });
+    }
+    return result;
   } catch (error: any) {
     console.error("Delete report error:", error);
     return {

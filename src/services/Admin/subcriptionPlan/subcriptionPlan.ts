@@ -3,6 +3,7 @@
 
 import { serverFetch } from "@/lib/server-fetch";
 import { ICreateSubscriptionPlanPricing } from "@/types/SubscriptionPlan";
+import { revalidateTag } from "next/cache";
 
 
 
@@ -24,7 +25,14 @@ export async function createSubscriptionPlan(
       headers: { "Content-Type": "application/json" },
     });
 
-    return await res.json();
+    const result = await res.json();
+
+    if (result.success) {
+      revalidateTag("subscription-plans-list", { expire: 0 });
+      revalidateTag("subscription-plans-page-1", { expire: 0 });
+
+    }
+    return result;
   } catch (error: any) {
     return {
       success: false,
@@ -43,7 +51,9 @@ export async function getAllSubscriptionPlans(query: IPaginationQuery = {}) {
     ).toString();
 
     const res = await serverFetch.get(
-      `/subscription-plan?${queryString}`
+      `/subscription-plan?${queryString}`, {
+      next: { tags: ['subscription-plans-list'], revalidate: 180 }
+    }
     );
 
     return await res.json();
@@ -60,7 +70,9 @@ export async function getAllSubscriptionPlans(query: IPaginationQuery = {}) {
 // ----------------------------------------------------
 export async function getSubscriptionPlanById(id: string) {
   try {
-    const res = await serverFetch.get(`/subscription-plan/${id}`);
+    const res = await serverFetch.get(`/subscription-plan/${id}`, {
+      next: { tags: [`subscription-plan-${id}`], revalidate: 180 }
+    });
     return await res.json();
   } catch (error: any) {
     return {
@@ -83,7 +95,14 @@ export async function updateSubscriptionPlan(
       headers: { "Content-Type": "application/json" },
     });
 
-    return await res.json();
+    const result = await res.json();
+
+    if (result.success) {
+      revalidateTag("subscription-plans-list", { expire: 0 });
+      revalidateTag("subscription-plans-page-1", { expire: 0 });
+
+    }
+    return result;
   } catch (error: any) {
     return {
       success: false,
@@ -99,7 +118,14 @@ export async function deleteSubscriptionPlan(id: string) {
   try {
     const res = await serverFetch.delete(`/subscription-plan/${id}`);
 
-    return await res.json();
+    const result = await res.json();
+
+    if (result.success) {
+      revalidateTag("subscription-plans-list", { expire: 0 });
+      revalidateTag("subscription-plans-page-1", { expire: 0 });
+
+    }
+    return result;
   } catch (error: any) {
     return {
       success: false,

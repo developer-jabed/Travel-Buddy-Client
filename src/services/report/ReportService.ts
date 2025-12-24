@@ -2,6 +2,7 @@
 "use server"
 import { serverFetch } from "@/lib/server-fetch";
 import { IReport } from "@/types/Report.interface";
+import { revalidateTag } from "next/cache";
 
 export async function createReport(payload: Partial<IReport>) {
     try {
@@ -21,7 +22,12 @@ export async function createReport(payload: Partial<IReport>) {
 
 export async function getAllReports(): Promise<any> {
     try {
-        const response = await serverFetch.get(`/report`);
+        const response = await serverFetch.get(`/report`, {
+            next: {
+                tags: ["reports-list"],
+                revalidate: 180,
+            }
+        });
         return await response.json();
     } catch (error: any) {
         return {
@@ -36,7 +42,12 @@ export async function getAllReports(): Promise<any> {
 
 export async function getReportById(id: string): Promise<any> {
     try {
-        const response = await serverFetch.get(`/report/${id}`);
+        const response = await serverFetch.get(`/report/${id}`, {
+            next: {
+                tags: [`report-${id}`, "reports-list"],
+                revalidate: 180,
+            }
+        });
         return await response.json();
     } catch (error: any) {
         return {
@@ -59,7 +70,11 @@ export async function updateReportStatus(
             headers: { "Content-Type": "application/json" },
         });
 
-        return await res.json();
+        const result = await res.json();
+        if (result.success) {
+            revalidateTag("reports-list", { expire: 0 });
+        }
+        return result;
     } catch (error: any) {
         return {
             success: false,
@@ -75,7 +90,11 @@ export async function updateReportStatus(
 export async function deleteReport(id: string): Promise<any> {
     try {
         const response = await serverFetch.delete(`/report/${id}`);
-        return await response.json();
+        const result = await response.json();
+        if (result.success) {
+            revalidateTag("reports-list", { expire: 0 });
+        }
+        return result;
     } catch (error: any) {
         return {
             success: false,

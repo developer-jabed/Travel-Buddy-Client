@@ -2,14 +2,28 @@
 "use server";
 
 import { serverFetch } from "@/lib/server-fetch";
+import { revalidateTag } from "next/cache";
 
 /**
  * GET ALL TRAVELERS
  */
 export async function getTravelers(queryString?: string) {
     try {
+
+        const searchParams = new URLSearchParams(queryString);
+        const page = searchParams.get("page") || "1";
+        const searchTerm = searchParams.get("searchTerm") || "";
         const response = await serverFetch.get(
-            `/traveler${queryString ? `?${queryString}` : ""}`
+            `/traveler${queryString ? `?${queryString}` : ""}`, {
+            next: {
+                tags: [
+                    "travelers-list",
+                    `travelers-pages-${page}`,
+                    `travelers-search-${searchTerm || "all"}`
+                ],
+                revalidate: 180,
+            }
+        }
         );
         return await response.json();
     } catch (error: any) {
@@ -29,7 +43,12 @@ export async function getTravelers(queryString?: string) {
  */
 export async function getTravelerById(id: string) {
     try {
-        const response = await serverFetch.get(`/traveler/${id}`);
+        const response = await serverFetch.get(`/traveler/${id}`, {
+            next: {
+                tags: [`traveler-${id}`, `traveler-details-${id}`, "travelers-list"],
+                revalidate: 180,
+            }
+        });
         return await response.json();
     } catch (error: any) {
         console.error("Get traveler error:", error);
@@ -51,7 +70,13 @@ export async function getTravelerById(id: string) {
 export async function softDeleteTraveler(id: string) {
     try {
         const response = await serverFetch.patch(`/traveler/soft/${id}`);
-        return await response.json();
+        const result = await response.json();
+
+        if (result.success) {
+            revalidateTag("travelers-list", { expire: 0 });
+            revalidateTag("travelers-page-1", { expire: 0 });
+        }
+    return result;
     } catch (error: any) {
         console.error("Soft delete traveler error:", error);
         return {

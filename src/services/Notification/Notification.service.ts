@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { serverFetch } from "@/lib/server-fetch";
 import { INotification } from "@/types/Notification.interface";
+import { revalidateTag } from "next/cache";
 
 // Fetch all notifications for the logged-in user
 export async function getMyNotifications(): Promise<{
@@ -11,7 +12,9 @@ export async function getMyNotifications(): Promise<{
   message?: string;
 }> {
   try {
-    const response = await serverFetch.get("/notifications/me");
+    const response = await serverFetch.get("/notifications/me",{
+      next: { tags: ["notifications-list"], revalidate: 180 },
+    });
 
     if (!response.ok) {
       return { success: false, message: "Failed to fetch notifications" };
@@ -46,6 +49,10 @@ export async function markNotificationAsRead(
     }
 
     const resJson = await response.json();
+    if (resJson?.success) {
+      revalidateTag("notifications-list", { expire: 0 });
+      
+    }
 
     return {
       success: true,

@@ -2,6 +2,7 @@
 "use server";
 
 import { serverFetch } from "@/lib/server-fetch";
+import { revalidateTag } from "next/cache";
 
 export interface IPaginationQuery {
     page?: number;
@@ -26,7 +27,11 @@ export async function createSubscription(payload: ICreateSubscriptionPayload) {
             headers: { "Content-Type": "application/json" },
         });
 
-        return await res.json();
+        const result = await res.json();
+        if (result.success) {
+            revalidateTag("subscriptions-list", { expire: 0 });
+        }
+        return result;
     } catch (error: any) {
         return {
             success: false,
@@ -44,7 +49,9 @@ export async function getAllSubscriptions(query: IPaginationQuery = {}) {
             query as Record<string, string>
         ).toString();
 
-        const res = await serverFetch.get(`/subscription?${queryString}`);
+        const res = await serverFetch.get(`/subscription?${queryString}`, {
+            next: { tags: ["subscriptions-list"], revalidate: 180 },
+        });
 
         return await res.json();
     } catch (error: any) {
@@ -60,7 +67,9 @@ export async function getAllSubscriptions(query: IPaginationQuery = {}) {
 // ----------------------------------------------------
 export async function getSubscriptionById(id: string) {
     try {
-        const res = await serverFetch.get(`/subscription/${id}`);
+        const res = await serverFetch.get(`/subscription/${id}`, {
+            next: { tags: [`subscription-${id}`, "subscriptions-list"], revalidate: 180 },
+        });
 
         return await res.json();
     } catch (error: any) {
@@ -81,7 +90,12 @@ export async function updateSubscription(id: string, payload: any) {
             headers: { "Content-Type": "application/json" },
         });
 
-        return await res.json();
+        const result = await res.json();
+        if (result.success) {
+            revalidateTag("subscriptions-list", { expire: 0 });
+            revalidateTag(`subscription-${id}`, { expire: 0 });
+        }
+        return result;
     } catch (error: any) {
         return {
             success: false,
@@ -97,7 +111,12 @@ export async function deleteSubscription(id: string) {
     try {
         const res = await serverFetch.delete(`/subscription/${id}`);
 
-        return await res.json();
+        const result = await res.json();
+        if (result.success) {
+            revalidateTag("subscriptions-list", { expire: 0 });
+            revalidateTag(`subscription-${id}`, { expire: 0 });
+        }
+        return result;
     } catch (error: any) {
         return {
             success: false,

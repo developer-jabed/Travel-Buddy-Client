@@ -13,7 +13,7 @@ export default function AboutPage() {
     if (!containerRef.current) return;
 
     gsap.from(containerRef.current.children, {
-      opacity: 0,
+      opacity: 1,
       y: 40,
       duration: 0.9,
       stagger: 0.15,
@@ -24,7 +24,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-20">
       <motion.div
-        initial={{ opacity: 0, scale: 0.96 }}
+        initial={{ opacity: 1, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6 }}
         className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-10"
@@ -190,7 +190,7 @@ export default function AboutPage() {
 
           <motion.div whileHover={{ scale: 1.05 }}>
             <Link
-              href="/explore"
+              href="/trip"
               className="px-6 py-3 border border-blue-600 text-blue-600 rounded-xl font-semibold"
             >
               Explore Trips

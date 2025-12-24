@@ -2,6 +2,7 @@
 "use server";
 
 import { serverFetch } from "@/lib/server-fetch";
+import { revalidateTag } from "next/cache";
 
 // -----------------------------
 // TYPES
@@ -28,7 +29,13 @@ export async function createBuddyRequest(payload: IBuddyRequestPayload) {
       headers: { "Content-Type": "application/json" },
     });
 
-    return await res.json();
+    const result = await res.json();
+
+    if (result.success) {
+      revalidateTag("buddy-requests-list", { expire: 0 });
+      revalidateTag("buddy-requests-page-1", { expire: 0 });
+    }
+    return result;
   } catch (error: any) {
     return {
       success: false,
@@ -44,7 +51,9 @@ export async function createBuddyRequest(payload: IBuddyRequestPayload) {
 // -----------------------------
 export async function getReceivedBuddyRequests(queryString: string = "") {
   try {
-    const res = await serverFetch.get(`/buddy${queryString}`);
+    const res = await serverFetch.get(`/buddy${queryString}`, {
+      next: { tags: ["buddy-requests-list"], revalidate: 180 }
+    });
 
     return await res.json();
   } catch (error: any) {
@@ -59,7 +68,9 @@ export async function getReceivedBuddyRequests(queryString: string = "") {
 // -----------------------------
 export async function getSentBuddyRequests(queryString: string = "") {
   try {
-    const res = await serverFetch.get(`/buddy/own${queryString}`);
+    const res = await serverFetch.get(`/buddy/own${queryString}`, {
+      next: { tags: ["buddy-requests-list"], revalidate: 180 }
+    });
 
     return await res.json();
   } catch (error: any) {
@@ -75,16 +86,22 @@ export async function getSentBuddyRequests(queryString: string = "") {
 export async function updateBuddyRequest(
   requestId: string,
   payload: IBuddyRequestUpdatePayload
-  
+
 ) {
   try {
     const res = await serverFetch.patch(`/buddy/${requestId}`, {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-      
+
     });
 
-    return await res.json();
+    const result = await res.json();
+
+    if (result.success) {
+      revalidateTag("buddy-requests-list", { expire: 0 });
+      revalidateTag("buddy-requests-page-1", { expire: 0 });
+    }
+    return result;
   } catch (error: any) {
     return {
       success: false,

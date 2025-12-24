@@ -2,6 +2,7 @@
 "use server"
 import { serverFetch } from "@/lib/server-fetch";
 import { IReview } from "@/types/Review.interface";
+import { revalidateTag } from "next/cache";
 
 interface CreateReviewInput {
     receiverId: string;
@@ -21,7 +22,13 @@ export async function createReview(payload: CreateReviewInput) {
             headers: { "Content-Type": "application/json" },
         });
 
-        return await res.json();
+
+        const result = await res.json();
+        if (result.success) {
+            revalidateTag("reviews-list", { expire: 0 });
+            revalidateTag(`review-${result.data?.id}`, { expire: 0 });
+        }
+        return result;
     } catch (error: any) {
         return {
             success: false,
@@ -36,7 +43,13 @@ export async function getAllReviews(): Promise<{
     message?: string;
 }> {
     try {
-        const response = await serverFetch.get(`/review`);
+        const response = await serverFetch.get(`/review`, {
+            next: {
+                tags: [
+                    'reviews-list'
+                ], revalidate: 180
+            }
+        });
         return await response.json();
     } catch (error: any) {
         return {
@@ -53,7 +66,15 @@ export async function getReviewById(
     id: string
 ): Promise<{ success: boolean; data?: IReview; message?: string }> {
     try {
-        const response = await serverFetch.get(`/review/${id}`);
+        const response = await serverFetch.get(`/review/${id}`, {
+            next: {
+                tags: [
+                    `review-${id}`,
+                    "reviews-list"
+                ],
+                revalidate: 180
+            }
+        });
         return await response.json();
     } catch (error: any) {
         return {
@@ -76,7 +97,12 @@ export async function updateReview(
             headers: { "Content-Type": "application/json" },
         });
 
-        return await res.json();
+        const result = await res.json();
+        if (result.success) {
+            revalidateTag("reviews-list", { expire: 0 });
+            revalidateTag(`review-${id}`, { expire: 0 });
+        }
+        return result;
     } catch (error: any) {
         return {
             success: false,
@@ -94,7 +120,13 @@ export async function deleteReview(
 ): Promise<{ success: boolean; message?: string }> {
     try {
         const response = await serverFetch.delete(`/review/${id}`);
-        return await response.json();
+
+        const result = await response.json();
+        if (result.success) {
+            revalidateTag("reviews-list", { expire: 0 });
+            revalidateTag(`review-${id}`, { expire: 0 });
+        }
+        return result;
     } catch (error: any) {
         return {
             success: false,

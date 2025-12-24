@@ -3,7 +3,9 @@ import { serverFetch } from "@/lib/server-fetch";
 
 export async function getDashboardMeta(queryString: string = "") {
   try {
-    const res = await serverFetch.get(`/meta${queryString}`);
+    const res = await serverFetch.get(`/meta${queryString}`,{
+      next: { tags: ['admins-dashboard-meta'], revalidate: 180 }
+    });
 
     return await res.json();
   } catch (error: any) {
