@@ -1,4 +1,4 @@
-// app/dashboard/page.tsx
+"use server";
 import TravelDashboard from "@/components/modules/Meta/Meta";
 
 export const dynamic = "force-dynamic";

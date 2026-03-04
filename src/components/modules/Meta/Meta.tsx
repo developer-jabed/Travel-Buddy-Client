@@ -32,9 +32,7 @@ import { motion } from "framer-motion";
 
 const COLORS = ["#14B8A6", "#F59E0B", "#6366F1", "#22C55E", "#F97316", "#E11D48", "#FACC15"];
 
-// ────────────────────────────────────────────────
-// Counter – fixed: no setState in effect body
-// ────────────────────────────────────────────────
+
 function Counter({ value }: { value: number | string }) {
   const [displayValue, setDisplayValue] = useState<string | number>(0);
 
@@ -72,9 +70,7 @@ function Counter({ value }: { value: number | string }) {
   return <>{typeof value === "string" ? value : displayValue.toLocaleString()}</>;
 }
 
-// ────────────────────────────────────────────────
-// Sparkline
-// ────────────────────────────────────────────────
+
 function Sparkline({ data, color }: { data: number[]; color: string }) {
   const chartData = data.map((value) => ({ value }));
   return (
@@ -98,7 +94,7 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
   );
 }
 
-// StatCard remains mostly the same...
+
 function StatCard({
   icon: Icon,
   title,
