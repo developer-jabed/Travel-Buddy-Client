@@ -1,297 +1,245 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
+"use client"
 
-import { useEffect, useState, useMemo } from "react";
-import { getDashboardMetaData } from "@/services/meta/meta.service";
+import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
+import CountUp from "react-countup"
 import {
-  MapPin,
-  Users,
-  Handshake,
-  Star,
-  CreditCard,
-  Bell,
-  TrendingUp,
-  ShieldCheck,
-} from "lucide-react";
-import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   PieChart,
   Pie,
   Cell,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  CartesianGrid,
-  XAxis,
-  YAxis,
   Legend,
-  AreaChart,
-  Area,
-} from "recharts";
-import { motion } from "framer-motion";
+  BarChart,
+  Bar,
+} from "recharts"
+import {
+  Users,
+  MapPin,
+  Handshake,
+  DollarSign,
+  AlertTriangle,
+  Clock,
+  FileWarning,
+  UserCheck,
+} from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Progress } from "@/components/ui/progress"
+import { getDashboardMetaData } from "@/services/meta/meta.service"
 
-const COLORS = ["#14B8A6", "#F59E0B", "#6366F1", "#22C55E", "#F97316", "#E11D48", "#FACC15"];
+const CHART_COLORS = [
+  "#4f46e5", // indigo-600
+  "#059669", // emerald-600
+  "#d97706", // amber-600
+  "#dc2626", // rose-600
+  "#7c3aed", // violet-600
+]
 
-
-function Counter({ value }: { value: number | string }) {
-  const [displayValue, setDisplayValue] = useState<string | number>(0);
-
-  const targetValue = useMemo(() => {
-    if (typeof value === "string") {
-      const parsed = parseFloat(value);
-      return isNaN(parsed) ? 0 : parsed;
-    }
-    return value;
-  }, [value]);
-
-  useEffect(() => {
-
-    let start = 0;
-    const duration = 900;
-    const step = targetValue / (duration / 16);
-
-    const animate = () => {
-      start += step;
-      if (start >= targetValue) {
-        setDisplayValue(targetValue);
-      } else {
-        setDisplayValue(Math.floor(start));
-        requestAnimationFrame(animate);
-      }
-    };
-
-    requestAnimationFrame(animate);
-
-    return () => {
-      // No cleanup needed for rAF in this case
-    };
-  }, [targetValue]);
-
-  return <>{typeof value === "string" ? value : displayValue.toLocaleString()}</>;
-}
-
-
-function Sparkline({ data, color }: { data: number[]; color: string }) {
-  const chartData = data.map((value) => ({ value }));
-  return (
-    <ResponsiveContainer width="100%" height={32}>
-      <AreaChart data={chartData}>
-        <defs>
-          <linearGradient id="sparkGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity={0.5} />
-            <stop offset="100%" stopColor={color} stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <Area
-          type="monotone"
-          dataKey="value"
-          stroke={color}
-          fill="url(#sparkGradient)"
-          strokeWidth={2}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
-  );
-}
-
-
-function StatCard({
-  icon: Icon,
-  title,
-  value,
-  color,
-  trend = "+12%",
-  data,
-}: {
-  icon: any;
-  title: string;
-  value: number | string;
-  color: string;
-  trend?: string;
-  data?: number[];
-}) {
-  return (
-    <motion.div
-      whileHover={{ y: -4, scale: 1.02 }}
-      className="p-5 sm:p-6 rounded-2xl bg-white shadow-sm hover:shadow-md border border-gray-100 transition-all"
-    >
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-gray-500 font-medium">{title}</p>
-          <p className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1.5">
-            <Counter value={value} />
-          </p>
-        </div>
-        <div className="p-3 rounded-xl" style={{ backgroundColor: `${color}15` }}>
-          <Icon className="w-6 h-6" style={{ color }} />
-        </div>
-      </div>
-
-      {data && <div className="mt-3"><Sparkline data={data} color={color} /></div>}
-
-      <div className="mt-3 flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
-        <TrendingUp size={14} /> {trend} recent
-      </div>
-    </motion.div>
-  );
-}
-
-export default function TravelDashboard() {
-  const [meta, setMeta] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function AdminDashboard() {
+  const [meta, setMeta] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await getDashboardMetaData();
-        if (res.success && res.data) {
-          setMeta(res.data);
-        } else {
-          setError(res.message || "Failed to load dashboard data");
-        }
-      } catch (err: any) {
-        setError(err.message || "Connection error");
-      } finally {
-        setLoading(false);
-      }
-    };
+    getDashboardMetaData().then((res) => {
+      if (res.success) setMeta(res.data.data)
+      setLoading(false)
+    })
+  }, [])
 
-    fetchData();
-  }, []);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="h-12 w-12 mx-auto mb-4 rounded-full border-4 border-gray-200 border-t-indigo-600 animate-spin" />
+          <p className="text-gray-600 font-medium">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center text-red-600">{error}</div>;
-  if (!meta) return null;
-
-  const isAdmin = meta.role === "ADMIN";
-
-  const weeklyTrips         = meta.weeklyTrips         ?? [0,0,0,0];
-  const weeklyBuddyRequests = meta.weeklyBuddyRequests ?? [0,0,0,0];
-  const weeklyMessages      = meta.weeklyMessages      ?? [0,0,0,0];
-  const weeklyReviews       = meta.weeklyReviews       ?? [0,0,0,0];
-  const weeklyNotifications = meta.weeklyNotifications ?? [0,0,0,0];
-
-  const totalTrips      = meta.totalTripsPersonal ?? meta.totalTrips ?? 0;
-  const avgRating       = meta.averageRating      ?? 0;
-  const unreadNotifs    = meta.unreadNotifications ?? 0;
-  const pendingRequests = meta.pendingBuddyRequestsForMe ?? meta.pendingBuddyRequests ?? 0;
-  const safetyScore     = meta.safetyScore        ?? 80;
-
-  const growthData = [
-    { name: "W1", trips: weeklyTrips[0], requests: weeklyBuddyRequests[0], messages: weeklyMessages[0], reviews: weeklyReviews[0], notifs: weeklyNotifications[0] },
-    { name: "W2", trips: weeklyTrips[1], requests: weeklyBuddyRequests[1], messages: weeklyMessages[1], reviews: weeklyReviews[1], notifs: weeklyNotifications[1] },
-    { name: "W3", trips: weeklyTrips[2], requests: weeklyBuddyRequests[2], messages: weeklyMessages[2], reviews: weeklyReviews[2], notifs: weeklyNotifications[2] },
-    { name: "W4", trips: weeklyTrips[3], requests: weeklyBuddyRequests[3], messages: weeklyMessages[3], reviews: weeklyReviews[3], notifs: weeklyNotifications[3] },
-  ];
+  const weeklyData = [
+    { name: "W1", trips: meta?.weeklyTrips?.[0] ?? 0, requests: meta?.weeklyBuddyRequests?.[0] ?? 0 },
+    { name: "W2", trips: meta?.weeklyTrips?.[1] ?? 0, requests: meta?.weeklyBuddyRequests?.[1] ?? 0 },
+    { name: "W3", trips: meta?.weeklyTrips?.[2] ?? 0, requests: meta?.weeklyBuddyRequests?.[2] ?? 0 },
+    { name: "W4", trips: meta?.weeklyTrips?.[3] ?? 0, requests: meta?.weeklyBuddyRequests?.[3] ?? 0 },
+  ]
 
   const pieData = [
-    { name: "Trips",         value: totalTrips },
-    { name: "Requests",      value: pendingRequests },
-    { name: "Messages",      value: meta.totalMessages ?? 0 },
-    { name: "Reviews",       value: meta.totalReviewsReceived ?? meta.totalReviews ?? 0 },
-    { name: "Unread Notifs", value: unreadNotifs },
-  ].filter((item) => item.value > 0);
+    { name: "Trips",     value: meta?.totalTripsGlobal ?? 0 },
+    { name: "Users",     value: meta?.totalUsers ?? 0 },
+    { name: "Requests",  value: meta?.totalBuddyRequestsGlobal ?? 0 },
+    { name: "Reports",   value: meta?.totalReports ?? 0 },
+  ].filter(d => d.value > 0)
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8 space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            {isAdmin ? "Platform Overview" : "Your Travel Dashboard"}
-          </h1>
-          <p className="text-gray-600 mt-1">
-            {isAdmin ? "System-wide statistics" : "Your activity & profile summary"}
-          </p>
+    <div className="min-h-screen bg-gray-50">
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-10 lg:space-y-14">
+
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">
+              Admin Dashboard
+            </h1>
+            <p className="mt-1.5 text-gray-600">
+              Real-time platform overview
+            </p>
+          </div>
+          <Badge variant="outline" className="px-4 py-1.5 text-sm font-medium border-gray-300">
+            Updated {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Badge>
         </div>
-        {isAdmin && (
-          <div className="text-sm bg-green-100 text-green-800 px-4 py-2 rounded-full font-medium">
-            Admin View
-          </div>
-        )}
-      </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-        <StatCard icon={MapPin}        title="Total Trips"         value={totalTrips}      color="#14B8A6" data={weeklyTrips} />
-        <StatCard icon={Handshake}     title="Pending Requests"    value={pendingRequests} color="#F59E0B" data={weeklyBuddyRequests} />
-        <StatCard icon={Star}          title="Avg Rating"          value={avgRating ? avgRating.toFixed(1) : "—"} color="#FACC15" data={weeklyReviews} />
-        <StatCard icon={Bell}          title="Unread Notifications" value={unreadNotifs}   color="#E11D48" data={weeklyNotifications} />
+        <Separator />
 
-        {isAdmin && (
-          <>
-            <StatCard icon={Users}      title="Total Users" value={meta.totalUsers ?? 0}   color="#0EA5E9" />
-            <StatCard icon={CreditCard} title="Revenue"     value={meta.totalRevenue ?? 0} color="#22C55E" />
-          </>
-        )}
+        {/* Revenue – standout but clean */}
+        <Card className="border border-gray-200 shadow-sm">
+          <CardContent className="p-6 lg:p-8 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2.5 rounded-lg bg-emerald-100">
+                  <DollarSign className="h-7 w-7 text-emerald-700" />
+                </div>
+                <h2 className="text-2xl lg:text-3xl font-bold text-gray-900">Total Revenue</h2>
+              </div>
+              <div className="text-5xl lg:text-6xl font-extrabold text-gray-900">
+                <CountUp end={meta?.totalRevenue ?? 0} separator="," duration={1.8} prefix="$" />
+              </div>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <Badge className="bg-emerald-100 text-emerald-800 px-4 py-1.5 text-base">
+                  {meta?.totalSuccessfulPayments ?? 0} payments
+                </Badge>
+                <Badge variant="outline" className="border-emerald-200 text-emerald-700">
+                  +12% this month
+                </Badge>
+              </div>
+            </div>
 
-        {!isAdmin && (
-          <StatCard icon={ShieldCheck} title="Safety Score" value={`${safetyScore}%`} color="#6366F1" />
-        )}
-      </div>
+            <div className="w-full lg:w-72">
+              <Progress
+                value={78}
+                className="h-3 bg-gray-100 [&>div]:bg-emerald-600 rounded-full"
+              />
+              <p className="mt-2 text-xs text-gray-500 text-center font-medium">
+                Progress toward monthly target
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-5 sm:p-7 rounded-2xl shadow-sm border border-gray-100"
-        >
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">Activity Breakdown</h3>
-          <div className="h-72 sm:h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={70}
-                  outerRadius={110}
-                  paddingAngle={4}
-                  dataKey="value"
-                  label={({ name, percent }) => {
-                    // Fixed: safe access to percent
-                    if (percent === undefined || percent === null) return name;
-                    return `${name} ${(percent * 100).toFixed(0)}%`;
-                  }}
-                >
-                  {pieData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend layout="horizontal" verticalAlign="bottom" />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
+        <Separator className="my-10" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white p-5 sm:p-7 rounded-2xl shadow-sm border border-gray-100"
-        >
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">Activity Trend (Last 4 Weeks)</h3>
-          <div className="h-72 sm:h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={growthData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" stroke="#888" />
-                <YAxis stroke="#888" />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="trips"    name="Trips"    stroke="#14B8A6" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="requests" name="Requests" stroke="#F59E0B" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="messages" name="Messages" stroke="#6366F1" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="reviews"  name="Reviews"  stroke="#FACC15" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="notifs"   name="Notifs"   stroke="#E11D48" strokeWidth={2.5} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
+        {/* KPI Cards */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[
+            { title: "Total Users",     value: meta?.totalUsers ?? 0,        icon: Users,        color: "indigo" },
+            { title: "Verified Users",  value: meta?.totalVerifiedUsers ?? 0, icon: UserCheck,    color: "emerald" },
+            { title: "Total Trips",     value: meta?.totalTripsGlobal ?? 0,   icon: MapPin,       color: "teal" },
+            { title: "Buddy Requests",  value: meta?.totalBuddyRequestsGlobal ?? 0, icon: Handshake, color: "amber" },
+            { title: "Pending Requests",value: meta?.pendingBuddyRequestsGlobal ?? 0, icon: Clock,    color: "orange" },
+            { title: "Total Reports",   value: meta?.totalReports ?? 0,       icon: FileWarning,  color: "rose" },
+            { title: "Pending Reports", value: meta?.pendingReports ?? 0,     icon: AlertTriangle,color: "red" },
+          ].map((item, i) => (
+            <motion.div
+              key={i}
+              whileHover={{ scale: 1.03, y: -4 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              <Card className="border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500 font-medium">{item.title}</p>
+                      <p className={`text-3xl lg:text-4xl font-bold mt-1 text-${item.color}-700`}>
+                        <CountUp end={item.value} separator="," duration={1.5} />
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-lg bg-${item.color}-50`}>
+                      <item.icon className={`h-7 w-7 text-${item.color}-600`} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+        <Separator className="my-12" />
+
+        {/* Charts */}
+        <div className="grid gap-8 lg:grid-cols-2">
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-gray-900">Platform Distribution</CardTitle>
+              <CardDescription className="text-gray-600">Overview of core entities</CardDescription>
+            </CardHeader>
+            <CardContent className="h-80">
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={70}
+                    outerRadius={110}
+                    paddingAngle={4}
+                    dataKey="value"
+                    label={({ name, percent = 0 }) => Math.round(percent * 100) > 4 ? `${name} ${Math.round(percent * 100)}%` : ""}
+                  >
+                    {pieData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend layout="horizontal" verticalAlign="bottom" />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-gray-900">Weekly Activity</CardTitle>
+              <CardDescription className="text-gray-600">Trips & requests trend</CardDescription>
+            </CardHeader>
+            <CardContent className="h-80">
+              <ResponsiveContainer>
+                <BarChart data={weeklyData} barGap={12}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="name" axisLine={false} tick={{ fill: "#6b7280" }} />
+                  <YAxis axisLine={false} tick={{ fill: "#6b7280" }} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="trips" name="Trips" fill="#4f46e5" radius={[6,6,0,0]} />
+                  <Bar dataKey="requests" name="Requests" fill="#059669" radius={[6,6,0,0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Separator className="my-12" />
+
+        {/* Footer note */}
+        <div className="text-center text-sm text-gray-500">
+          Dashboard • Data last refreshed {new Date().toLocaleTimeString()} • Dhaka, BD
+        </div>
       </div>
     </div>
-  );
+  )
 }
