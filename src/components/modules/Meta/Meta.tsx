@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { getDashboardMeta } from "@/services/meta/meta.service";
+import { getDashboardMetaData } from "@/services/meta/meta.service";
 import {
   MapPin,
   Users,
@@ -45,7 +45,7 @@ function Counter({ value }: { value: number | string }) {
   }, [value]);
 
   useEffect(() => {
-    // Instead of setState inside effect → use a proper animation loop
+
     let start = 0;
     const duration = 900;
     const step = targetValue / (duration / 16);
@@ -144,7 +144,7 @@ export default function TravelDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await getDashboardMeta();
+        const res = await getDashboardMetaData();
         if (res.success && res.data) {
           setMeta(res.data);
         } else {
